@@ -165,6 +165,13 @@ tr:hover td{background:rgba(138,108,62,.03)}
 .placeholder-page .coming{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--ink4)}
 
 /* ── MISC ── */
+
+.calc-input{width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2);border-radius:3px;font-family:'DM Sans',sans-serif}
+.row-red td{background:rgba(140,50,32,.08)!important}
+.row-amber td{background:rgba(122,80,16,.09)!important}
+.status-red{color:var(--red);font-weight:500}
+.status-amber{color:var(--amber);font-weight:500}
+.status-green{color:var(--green);font-weight:500}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
@@ -181,7 +188,8 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
   .card-grid{grid-template-columns:1fr 1fr}
   .two-col,.three-col{grid-template-columns:1fr}
 }
-@media print{#hdr,#sidebar{display:none}#content{margin:0;padding:20px}}
+#app-footer{margin:34px 0 8px;color:var(--ink4);font-size:11px;letter-spacing:.03em}
+@media print{#hdr,#sidebar{display:none}#content{margin:0;padding:20px}#app-footer{display:none}}
 </style>
 </head>
 <body>
@@ -252,7 +260,7 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
   <div class="card-grid">
     <div class="card">
       <div class="card-lbl">Launch Date</div>
-      <div class="card-val" style="font-size:15px;margin-top:3px" contenteditable="true">August 31, 2026</div>
+      <div class="card-val" style="font-size:15px;margin-top:3px" contenteditable="true">Internal date hidden</div>
       <div class="card-note" style="color:var(--red);font-size:10px;letter-spacing:.04em;text-transform:uppercase;margin-top:4px">Internal only — never share publicly</div>
     </div>
     <div class="card">
@@ -895,14 +903,87 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
 
 <section id="pg-formulacalc" class="page">
   <div class="page-title">Formula Calculator</div>
-  <div class="page-sub">Calculate ingredient quantities for any batch size</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">Includes: dropdown product selector, batch size input, overage %, auto-calculated quantities table, cost per unit.</p></div>
+  <div class="page-sub">Choose a product and enter batch size in grams to auto-calculate ingredient weights.</div>
+  <div class="card" style="max-width:780px">
+    <div class="three-col">
+      <div>
+        <div class="card-lbl">Product</div>
+        <select id="fc-product" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+          <option value="creme">Crème</option>
+          <option value="polish_ember">Polish Ember</option>
+          <option value="polish_grove">Polish Grove</option>
+          <option value="soak_bare">Soak Bare</option>
+          <option value="soak_drift">Soak Drift</option>
+          <option value="bar_bare">Bar Bare</option>
+          <option value="bar_solace">Bar Solace</option>
+        </select>
+      </div>
+      <div>
+        <div class="card-lbl">Batch Size (g)</div>
+        <input id="fc-batch" type="number" min="1" step="1" value="1000" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+      </div>
+      <div>
+        <div class="card-lbl">Total %</div>
+        <div class="card-val" id="fc-total" style="font-size:20px">100.0%</div>
+      </div>
+    </div>
+    <div class="section-label">Ingredient Weights</div>
+    <div class="tbl-wrap">
+      <table id="tbl-formula-calc" class="formula-tbl">
+        <thead><tr><th>Ingredient</th><th>%</th><th>Weight (g)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <section id="pg-batchcalc" class="page">
   <div class="page-title">Batch Calculator</div>
-  <div class="page-sub">Plan production runs, lot codes, soap cure tracking</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Generate lot codes, calculate total fill weight, and track soap cure dates.</div>
+  <div class="card" style="max-width:980px">
+    <div class="three-col">
+      <div>
+        <div class="card-lbl">SKU</div>
+        <select id="bc-sku" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+          <option>OE-LBC-2OZ</option><option>OE-LBC-4OZ</option><option>OE-RBP-EMBER</option><option>OE-RBP-GROVE</option>
+          <option>OE-MOS-BARE</option><option>OE-MOS-DRIFT</option><option>OE-GMS-BARE</option><option>OE-GMS-SOLACE</option>
+        </select>
+      </div>
+      <div>
+        <div class="card-lbl">Batch Date</div>
+        <input id="bc-date" type="date" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+      </div>
+      <div>
+        <div class="card-lbl">Units</div>
+        <input id="bc-units" type="number" min="1" step="1" value="24" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+      </div>
+    </div>
+    <div class="three-col" style="margin-top:12px">
+      <div>
+        <div class="card-lbl">Fill Weight (g)</div>
+        <input id="bc-fill" type="number" min="1" step="0.1" value="120" style="width:100%;padding:7px;border:1px solid var(--border);background:var(--cream);color:var(--ink2)">
+      </div>
+      <div>
+        <div class="card-lbl">Lot Code</div>
+        <div class="card-val" id="bc-lot" style="font-size:20px">—</div>
+      </div>
+      <div>
+        <div class="card-lbl">Soap Cure Complete</div>
+        <div class="card-val" id="bc-cure" style="font-size:18px">N/A</div>
+      </div>
+    </div>
+    <div class="section-label">Totals</div>
+    <div class="card-note" id="bc-totalfill" style="font-size:13px;color:var(--ink3)">Total fill: —</div>
+    <div class="tbl-actions" style="margin-top:12px"><button class="btn btn-primary" onclick="addBatchRun()">Save Batch Run</button></div>
+
+    <div class="section-label">Saved Batch Runs</div>
+    <div class="tbl-wrap">
+      <table id="tbl-batch-runs">
+        <thead><tr><th>SKU</th><th>Batch Date</th><th>Units</th><th>Fill (g)</th><th>Lot Code</th><th>Cure Complete</th><th>Delete</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
 <section id="pg-labelcomp" class="page">
@@ -913,14 +994,28 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
 
 <section id="pg-cogs" class="page">
   <div class="page-title">COGS Sheet</div>
-  <div class="page-sub">Cost of goods, DTC margin, wholesale margin</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">OI-002 — margin targets must be set before this page is meaningful.</p></div>
+  <div class="page-sub">Singles only. Edit unit costs to calculate COGS and margins.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-cogs">
+      <thead>
+        <tr><th>SKU</th><th>Price</th><th>Ingredient</th><th>Packaging</th><th>Labor</th><th>Shipping Supplies</th><th>COGS Total</th><th>DTC Margin %</th><th>Wholesale Margin %</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card-note" style="margin-top:8px">Rows are flagged red when DTC margin &lt; 65% or wholesale margin &lt; 45%.</div>
 </section>
 
 <section id="pg-pricing" class="page">
   <div class="page-title">Pricing &amp; Quantities</div>
-  <div class="page-sub">Launch inventory — on-hand, bundle allocation, sellable units</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Singles and bundles with live sellable inventory flags.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-pricing">
+      <thead><tr><th>SKU</th><th>Name</th><th>Price</th><th>On Hand</th><th>Bundle Alloc</th><th>Buffer</th><th>Sellable</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card-note" style="margin-top:8px">Sellable ≤ 4 shows amber. Sellable ≤ 2 shows red.</div>
 </section>
 
 <section id="pg-purchaselist" class="page">
@@ -937,14 +1032,30 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
 
 <section id="pg-suppliers" class="page">
   <div class="page-title">Suppliers</div>
-  <div class="page-sub">Vendor directory, MOQ, lead times, COA status</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Editable supplier tracker for key materials and packaging.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-suppliers">
+      <thead><tr><th>Supplier Name</th><th>Category</th><th>Contact</th><th>MOQ</th><th>Lead Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td contenteditable="true">Tallow Co-op</td><td contenteditable="true">Fats &amp; Oils</td><td contenteditable="true">ops@tallowco.com</td><td contenteditable="true">$250</td><td contenteditable="true">14 days</td><td contenteditable="true">⚠️ CONFLICT: $200 vs $250 — confirm in writing before ordering</td></tr>
+        <tr><td contenteditable="true">Amber Glass Works</td><td contenteditable="true">Packaging</td><td contenteditable="true">sales@amberglass.com</td><td contenteditable="true">500 units</td><td contenteditable="true">21 days</td><td contenteditable="true">Request breakage allowance terms.</td></tr>
+        <tr><td contenteditable="true">Botanical Distillers</td><td contenteditable="true">Aromatics</td><td contenteditable="true">orders@botanicaldistillers.com</td><td contenteditable="true">$300</td><td contenteditable="true">10 days</td><td contenteditable="true">Need latest COA with each lot.</td></tr>
+        <tr><td contenteditable="true">Label Atelier</td><td contenteditable="true">Labels</td><td contenteditable="true">print@labelatelier.com</td><td contenteditable="true">300 sheets</td><td contenteditable="true">12 days</td><td contenteditable="true">Confirm waterproof stock for bath products.</td></tr>
+        <tr><td contenteditable="true">Carton House</td><td contenteditable="true">Shipping Supplies</td><td contenteditable="true">support@cartonhouse.com</td><td contenteditable="true">250 cartons</td><td contenteditable="true">7 days</td><td contenteditable="true">Keep reserve mailers before launch week.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <section id="pg-inventory" class="page">
-  <div class="page-title">Inventory</div>
-  <div class="page-sub">Launch batch inventory — on-hand, allocated, sellable</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-title">Inventory Tracker</div>
+  <div class="page-sub">Live sellable inventory view synced from Pricing &amp; Quantities.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-inventory-live">
+      <thead><tr><th>SKU</th><th>Name</th><th>Sellable Units</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </section>
 
 <section id="pg-labelpack" class="page">
@@ -961,26 +1072,134 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
 
 <section id="pg-launch" class="page">
   <div class="page-title">Launch Planning</div>
-  <div class="page-sub">Phase timeline, checklist, hard blockers — internal only</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Internal planning dashboard for readiness and blocker tracking.</div>
+
+  <div class="card" style="max-width:760px;margin-bottom:16px">
+    <div class="card-lbl">Launch Countdown (Internal Only)</div>
+    <div class="card-val" id="launch-countdown">—</div>
+    <div class="card-note">Do not publish exact launch date publicly.</div>
+  </div>
+
+  <div class="section-label">Milestone Checklist</div>
+  <div class="tbl-wrap">
+    <table id="tbl-launch-milestones">
+      <thead><tr><th>Milestone</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Confirm tallow supplier MOQ in writing</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Set margin targets (DTC 65%, wholesale 45%)</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Finalize all batch production</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Complete 42-day cure for all soap batches</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Shopify store live</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Klaviyo welcome sequence active</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>All PDPs written and loaded</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Photography complete</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Instagram scheduled for launch week</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Open Items</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Issue</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>OI-001</td><td>MOQ conflict</td><td><span class="pill p-red">CRITICAL</span></td></tr>
+        <tr><td>OI-002</td><td>Margin targets</td><td><span class="pill p-amber">ACTIVE</span></td></tr>
+        <tr><td>OI-003</td><td>Bundle cap pressure</td><td><span class="pill p-amber">ACTIVE</span></td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <section id="pg-contentcal" class="page">
   <div class="page-title">Content Calendar</div>
-  <div class="page-sub">IG · TikTok · Pinterest — launch window and beyond</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Monthly planning grid for IG, TikTok, and Pinterest.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-content-calendar">
+      <thead>
+        <tr><th>Date</th><th>Platform</th><th>Format</th><th>Pillar</th><th>Hook</th><th>Caption</th><th>CTA</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input class="calc-input" type="date"></td>
+          <td><select class="calc-input"><option>IG</option><option>TikTok</option><option>Pinterest</option></select></td>
+          <td contenteditable="true">Reel</td>
+          <td><select class="calc-input"><option>Barrier Education</option><option>Ingredient Transparency</option><option>Elevated Ritual</option><option>Small-Batch BTS</option><option>Skin Comfort</option></select></td>
+          <td contenteditable="true">Hook</td>
+          <td contenteditable="true">Caption copy</td>
+          <td><select class="calc-input"><option>Early access → link in bio</option><option>Join the list at oatearth.com/join</option></select></td>
+          <td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td>
+        </tr>
+        <tr>
+          <td><input class="calc-input" type="date"></td>
+          <td><select class="calc-input"><option>IG</option><option>TikTok</option><option>Pinterest</option></select></td>
+          <td contenteditable="true">Carousel</td>
+          <td><select class="calc-input"><option>Barrier Education</option><option selected>Ingredient Transparency</option><option>Elevated Ritual</option><option>Small-Batch BTS</option><option>Skin Comfort</option></select></td>
+          <td contenteditable="true">Hook</td>
+          <td contenteditable="true">Caption copy</td>
+          <td><select class="calc-input"><option>Early access → link in bio</option><option selected>Join the list at oatearth.com/join</option></select></td>
+          <td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td>
+        </tr>
+        <tr>
+          <td><input class="calc-input" type="date"></td>
+          <td><select class="calc-input"><option>IG</option><option>TikTok</option><option>Pinterest</option></select></td>
+          <td contenteditable="true">Static</td>
+          <td><select class="calc-input"><option>Barrier Education</option><option>Ingredient Transparency</option><option selected>Elevated Ritual</option><option>Small-Batch BTS</option><option>Skin Comfort</option></select></td>
+          <td contenteditable="true">Hook</td>
+          <td contenteditable="true">Caption copy</td>
+          <td><select class="calc-input"><option selected>Early access → link in bio</option><option>Join the list at oatearth.com/join</option></select></td>
+          <td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl-actions"><button class="btn" onclick="addContentRow()">+ Add Calendar Row</button></div>
 </section>
 
 <section id="pg-emailseq" class="page">
   <div class="page-title">Email Sequences</div>
-  <div class="page-sub">Welcome, pre-launch, launch week, post-purchase, win-back</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-sub">Display reference only — no editing.</div>
+
+  <div class="section-label">1) Welcome Series (3 emails)</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Subject Line</th><th>Send Timing</th><th>Goal</th><th>Body Outline</th></tr></thead><tbody>
+    <tr><td>Welcome to Oat &amp; Earth: your skin ritual starts here</td><td>Immediately after signup</td><td>Brand intro + trust</td><td>Brand story, values, ritual framing, expectations for next emails.</td></tr>
+    <tr><td>Meet the heroes behind your barrier ritual</td><td>+2 days</td><td>Educate on hero products</td><td>Lipid Barrier Crème + Polish + Soak benefits and usage guidance.</td></tr>
+    <tr><td>Your FOUNDERS15 invite (limited)</td><td>+4 days</td><td>Drive first purchase</td><td>Offer details, singles-only note, urgency, direct product links.</td></tr>
+  </tbody></table></div>
+
+  <div class="section-label">2) Pre-Launch Waitlist (3 emails)</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Subject Line</th><th>Send Timing</th><th>Goal</th><th>Body Outline</th></tr></thead><tbody>
+    <tr><td>Countdown begins: your early access is coming</td><td>T-14 days</td><td>Build anticipation</td><td>Timeline overview and how early access works.</td></tr>
+    <tr><td>Sneak peek: formulas, textures, and ritual flow</td><td>T-7 days</td><td>Increase intent</td><td>Product visuals, ingredient transparency, bundle framing.</td></tr>
+    <tr><td>We’re live: your early access starts now</td><td>Launch day</td><td>Convert</td><td>Launch announcement, links, FOUNDERS15 reminder, stock note.</td></tr>
+  </tbody></table></div>
+
+  <div class="section-label">3) Post-Purchase (2 emails)</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Subject Line</th><th>Send Timing</th><th>Goal</th><th>Body Outline</th></tr></thead><tbody>
+    <tr><td>Your ritual guide: make the most of your order</td><td>+2 days after delivery</td><td>Improve outcomes</td><td>Step-by-step routine, frequency tips, texture expectations.</td></tr>
+    <tr><td>Time for a refill? Your 10-week reminder</td><td>10 weeks after purchase</td><td>Drive repeat purchase</td><td>Refill prompt, product matcher, quick reorder links.</td></tr>
+  </tbody></table></div>
 </section>
 
 <section id="pg-shopify" class="page">
-  <div class="page-title">Shopify Setup</div>
-  <div class="page-sub">oatearth.com — products, bundles, Klaviyo, inventory settings</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-title">Shopify Setup Checklist</div>
+  <div class="page-sub">Editable status tracker for launch-critical store configuration.</div>
+  <div class="tbl-wrap">
+    <table id="tbl-shopify-checklist">
+      <thead><tr><th>Item</th><th>Details</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Store name</td><td contenteditable="true">Oat &amp; Earth</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Domain</td><td contenteditable="true">oatearth.com</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Payment gateway</td><td contenteditable="true">Shopify Payments + backup enabled</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Shipping zones</td><td contenteditable="true">Domestic zones + rates verified</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>14 product listings</td><td contenteditable="true">8 singles + 6 bundles</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Discount code FOUNDERS15</td><td contenteditable="true">15% off singles only</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Tax settings</td><td contenteditable="true">Sales tax nexus + collection rules configured</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Metafields for PAO/allergens</td><td contenteditable="true">Configured on all applicable products</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+        <tr><td>Klaviyo integration</td><td contenteditable="true">Connected and tested</td><td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <section id="pg-wholesale" class="page">
@@ -996,17 +1215,66 @@ hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
 </section>
 
 <section id="pg-finance" class="page">
-  <div class="page-title">Finance</div>
-  <div class="page-sub">Revenue tracker, expense log, launch budget</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-title">Admin</div>
+  <div class="page-sub">Editable business profile and system data controls.</div>
+  <div class="card" style="max-width:900px">
+    <div class="section-label" style="margin-top:0">Business Info</div>
+    <div class="two-col">
+      <div><div class="card-lbl">Brand Name</div><input id="admin-brand-name" class="calc-input" value="Oat &amp; Earth"></div>
+      <div><div class="card-lbl">Founder</div><input id="admin-founder" class="calc-input" value="Founder Name"></div>
+      <div><div class="card-lbl">Location</div><input id="admin-location" class="calc-input" value="United States"></div>
+      <div><div class="card-lbl">Domain</div><input id="admin-domain" class="calc-input" value="oatearth.com"></div>
+      <div><div class="card-lbl">Instagram</div><input id="admin-instagram" class="calc-input" value="@oatearth"></div>
+      <div><div class="card-lbl">Launch Date (Internal)</div><input id="admin-launch-date" class="calc-input" type="date"></div>
+    </div>
+
+    <div class="section-label">System Controls</div>
+    <div class="tbl-actions">
+      <button class="btn" onclick="adminExportAllLocalStorage()">Export All localStorage</button>
+      <button class="btn" onclick="adminImportAllLocalStorage()">Import JSON</button>
+      <button class="btn btn-del" onclick="adminClearAllData()">Clear Data</button>
+    </div>
+    <div class="card-note" style="margin-top:8px">Export/import includes all keys currently stored in browser localStorage.</div>
+  </div>
 </section>
 
 <section id="pg-brand" class="page">
-  <div class="page-title">Brand &amp; Voice</div>
-  <div class="page-sub">Identity, tone rules, banned phrases, color palette, ritual</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+  <div class="page-title">Brand &amp; Voice Reference</div>
+  <div class="page-sub">Display-only canonical guide for team alignment.</div>
+
+  <div class="section-label">Brand Canon</div>
+  <div class="card" style="margin-bottom:10px">
+    Oat &amp; Earth creates small-batch tallow-based barrier care rituals that feel elevated, grounded, and calm. Every product centers on comfort, ingredient clarity, and sensory restraint.
+  </div>
+
+  <div class="section-label">Ritual</div>
+  <div class="card" style="margin-bottom:10px">Prepare → Cleanse → Refine → Seal</div>
+
+  <div class="section-label">Brand Voice Rules</div>
+  <div class="tbl-wrap"><table><tbody>
+    <tr><td>Voice</td><td>Calm, assured, quietly luxurious, ingredient-literate.</td></tr>
+    <tr><td>Sentence style</td><td>Clean and direct. Avoid hype language and exaggerated claims.</td></tr>
+    <tr><td>Claims</td><td>No medical claims. Ground in sensory experience and routine consistency.</td></tr>
+  </tbody></table></div>
+
+  <div class="section-label">Banned Words / Phrases</div>
+  <div class="card" style="margin-bottom:10px">"Chemical-free", "miracle", "instant cure", "toxin-free", "anti-aging miracle", "perfect skin"</div>
+
+  <div class="section-label">Visual System</div>
+  <div class="card" style="margin-bottom:10px">Cream (#F7F4EF), Oat (#EFE9E0), Charcoal (#2a2520), Gold (#8a6c3e sparingly). Typography: Playfair Display headings, DM Sans body.</div>
+
+  <div class="section-label">Social Channels + Pillars</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Channel</th><th>Primary Pillars</th></tr></thead><tbody>
+    <tr><td>Instagram</td><td>Barrier Education, Elevated Ritual, Ingredient Transparency</td></tr>
+    <tr><td>TikTok</td><td>Small-Batch BTS, Skin Comfort, Ingredient Transparency</td></tr>
+    <tr><td>Pinterest</td><td>Elevated Ritual, Barrier Education</td></tr>
+  </tbody></table></div>
+
+  <div class="section-label">CTA Rotation</div>
+  <div class="card">Early access → link in bio · Join the list at oatearth.com/join · Build your ritual at oatearth.com</div>
 </section>
 
+<footer id="app-footer">Oat &amp; Earth OS · Internal Use Only</footer>
 </main>
 
 <!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
@@ -1038,6 +1306,14 @@ function commitSave() {
     document.querySelectorAll('input[type=checkbox]').forEach((cb, i) => {
       out['cb::' + i] = cb.checked;
     });
+    // form fields
+    document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach((el, i) => {
+      const key = el.id ? 'fi::' + el.id : 'fi::idx::' + i;
+      out[key] = el.value;
+    });
+    // custom data
+    out['custom::batchRuns'] = batchRuns;
+
     localStorage.setItem(SK, JSON.stringify(out));
     const pill = document.getElementById('save-pill');
     if (pill) { pill.textContent = 'Saved ✓'; pill.className = 'saved'; }
@@ -1064,6 +1340,14 @@ function loadSaved() {
         if (span && cb.checked) span.classList.add('done');
       }
     });
+    document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach((el, i) => {
+      const key = el.id ? 'fi::' + el.id : 'fi::idx::' + i;
+      if (data[key] !== undefined) el.value = data[key];
+    });
+    if (Array.isArray(data['custom::batchRuns'])) {
+      batchRuns = data['custom::batchRuns'];
+      renderBatchRuns();
+    }
   } catch(e) {
     console.error('Load error:', e);
   }
@@ -1127,6 +1411,52 @@ function importJSON() {
 
 function today() {
   return new Date().toISOString().split('T')[0];
+}
+
+
+function adminExportAllLocalStorage() {
+  const dump = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    dump[k] = localStorage.getItem(k);
+  }
+  dlFile('oat_earth_os_all_localstorage_' + today() + '.json', JSON.stringify(dump, null, 2), 'application/json');
+}
+
+function adminImportAllLocalStorage() {
+  if (!confirm('Import will overwrite matching localStorage keys. Continue?')) return;
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        Object.entries(parsed).forEach(([k, v]) => {
+          localStorage.setItem(k, String(v));
+        });
+        loadSaved();
+        initLaunchCountdown();
+        recalcCogs();
+        recalcPricing();
+        updateFormulaCalc();
+        updateBatchCalcPreview();
+        alert('Import successful.');
+      } catch {
+        alert('Invalid JSON file.');
+      }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function adminClearAllData() {
+  if (!confirm('This will clear all localStorage data for this browser origin. Continue?')) return;
+  localStorage.clear();
+  location.reload();
 }
 
 /* ──────────────────────────────────────────
@@ -1300,11 +1630,278 @@ function initDash() {
 }
 
 /* ──────────────────────────────────────────
+   PART 2 OPERATIONS PAGES
+────────────────────────────────────────── */
+const PRICE_MAP = {
+  'OE-LBC-2OZ': 30,
+  'OE-LBC-4OZ': 54,
+  'OE-RBP-EMBER': 42,
+  'OE-RBP-GROVE': 42,
+  'OE-MOS-BARE': 32,
+  'OE-MOS-DRIFT': 32,
+  'OE-GMS-BARE': 14,
+  'OE-GMS-SOLACE': 14
+};
+
+const pricingRows = [
+  {sku:'OE-MOS-BARE',name:'Mineral Oat Soak — Bare',price:32,onHand:25,bundleAlloc:19,buffer:3,sellable:3,type:'single'},
+  {sku:'OE-MOS-DRIFT',name:'Mineral Oat Soak — Drift',price:32,onHand:28,bundleAlloc:19,buffer:3,sellable:6,type:'single'},
+  {sku:'OE-RBP-EMBER',name:'Ritual Body Polish — Ember',price:42,onHand:20,bundleAlloc:14,buffer:2,sellable:4,type:'single'},
+  {sku:'OE-RBP-GROVE',name:'Ritual Body Polish — Grove',price:42,onHand:20,bundleAlloc:14,buffer:2,sellable:4,type:'single'},
+  {sku:'OE-GMS-BARE',name:'Goat Milk Soap — Bare',price:14,onHand:20,bundleAlloc:13,buffer:2,sellable:5,type:'single'},
+  {sku:'OE-GMS-SOLACE',name:'Goat Milk Soap — Solace',price:14,onHand:20,bundleAlloc:13,buffer:2,sellable:5,type:'single'},
+  {sku:'OE-LBC-2OZ',name:'Lipid Barrier Crème — 2oz',price:30,onHand:40,bundleAlloc:10,buffer:4,sellable:26,type:'single'},
+  {sku:'OE-LBC-4OZ',name:'Lipid Barrier Crème — 4oz',price:54,onHand:24,bundleAlloc:18,buffer:3,sellable:3,type:'single'},
+  {sku:'OE-BUNDLE-BARR-1',name:'Barrier Bundle 1',price:84,onHand:9,bundleAlloc:0,buffer:0,sellable:9,type:'bundle'},
+  {sku:'OE-BUNDLE-BARR-2',name:'Barrier Bundle 2',price:84,onHand:9,bundleAlloc:0,buffer:0,sellable:9,type:'bundle'},
+  {sku:'OE-BUNDLE-DISC-1',name:'Discovery Bundle 1',price:104,onHand:5,bundleAlloc:0,buffer:0,sellable:5,type:'bundle'},
+  {sku:'OE-BUNDLE-DISC-2',name:'Discovery Bundle 2',price:104,onHand:5,bundleAlloc:0,buffer:0,sellable:5,type:'bundle'},
+  {sku:'OE-BUNDLE-SOAK',name:'Soak Bundle',price:58,onHand:14,bundleAlloc:0,buffer:0,sellable:14,type:'bundle'},
+  {sku:'OE-BUNDLE-SOAP',name:'Soap Bundle',price:25,onHand:10,bundleAlloc:0,buffer:0,sellable:10,type:'bundle'}
+];
+
+const formulaDefs = {
+  creme:[['Grass-fed tallow',45],['Jojoba oil',15],['Oat oil',18],['Mango butter',12],['Oat extract',5],['Preservative',1],['Vitamin E',1],['EO blend',3]],
+  polish_ember:[['Fine sugar',62],['Tallow balm base',20],['Apricot oil',10],['Emulsifier',4],['EO blend Ember',3],['Vitamin E',1]],
+  polish_grove:[['Fine sugar',62],['Tallow balm base',20],['Apricot oil',10],['Emulsifier',4],['EO blend Grove',3],['Vitamin E',1]],
+  soak_bare:[['Dead Sea salt',54],['Epsom salt',25],['Colloidal oat',10],['Coconut milk powder',6],['Clay',3],['Silica',2]],
+  soak_drift:[['Dead Sea salt',54],['Epsom salt',25],['Colloidal oat',10],['Coconut milk powder',6],['EO blend Drift',3],['Silica',2]],
+  bar_bare:[['Tallow',45.7],['Olive pomace oil',28.6],['Coconut oil',11.4],['Mango butter',8.6],['Castor oil',5.7]],
+  bar_solace:[['Tallow',45.2],['Olive pomace oil',28.3],['Coconut oil',11.2],['Mango butter',8.5],['Castor oil',5.6],['EO blend Solace',1.2]]
+};
+
+let batchRuns = [];
+
+function num(v){ const n=parseFloat(v); return Number.isFinite(n)?n:0; }
+function fmtMoney(v){ return '$' + num(v).toFixed(2); }
+function fmtPct(v){ return num(v).toFixed(1) + '%'; }
+
+function initCogs() {
+  const body = document.querySelector('#tbl-cogs tbody');
+  if (!body) return;
+  body.innerHTML = Object.entries(PRICE_MAP).map(([sku, price]) => `
+    <tr data-sku="${sku}">
+      <td>${sku}</td>
+      <td>${fmtMoney(price)}</td>
+      <td><input class="calc-input cogs-ing" type="number" min="0" step="0.01" value="0"></td>
+      <td><input class="calc-input cogs-pack" type="number" min="0" step="0.01" value="0"></td>
+      <td><input class="calc-input cogs-labor" type="number" min="0" step="0.01" value="0"></td>
+      <td><input class="calc-input cogs-ship" type="number" min="0" step="0.01" value="0"></td>
+      <td class="cogs-total">$0.00</td>
+      <td class="cogs-dtc">0.0%</td>
+      <td class="cogs-wh">0.0%</td>
+    </tr>`).join('');
+  recalcCogs();
+}
+
+function recalcCogs() {
+  document.querySelectorAll('#tbl-cogs tbody tr').forEach(tr => {
+    const sku = tr.dataset.sku;
+    const price = PRICE_MAP[sku] || 0;
+    const cogs = num(tr.querySelector('.cogs-ing').value) + num(tr.querySelector('.cogs-pack').value) + num(tr.querySelector('.cogs-labor').value) + num(tr.querySelector('.cogs-ship').value);
+    const dtc = price ? ((price - cogs) / price) * 100 : 0;
+    const whPrice = price * 0.5;
+    const wh = whPrice ? ((whPrice - cogs) / whPrice) * 100 : 0;
+    tr.querySelector('.cogs-total').textContent = fmtMoney(cogs);
+    tr.querySelector('.cogs-dtc').textContent = fmtPct(dtc);
+    tr.querySelector('.cogs-wh').textContent = fmtPct(wh);
+    tr.classList.toggle('row-red', dtc < 65 || wh < 45);
+  });
+}
+
+function initPricing() {
+  const body = document.querySelector('#tbl-pricing tbody');
+  if (!body) return;
+  body.innerHTML = pricingRows.map((r,i) => `
+    <tr data-idx="${i}" data-type="${r.type}">
+      <td>${r.sku}</td>
+      <td>${r.name}</td>
+      <td>${fmtMoney(r.price)}</td>
+      <td><input class="calc-input pr-on" type="number" min="0" step="1" value="${r.onHand}"></td>
+      <td><input class="calc-input pr-alloc" type="number" min="0" step="1" value="${r.bundleAlloc}"></td>
+      <td><input class="calc-input pr-buffer" type="number" min="0" step="1" value="${r.buffer}"></td>
+      <td class="pr-sell">${r.sellable}</td>
+    </tr>`).join('');
+  recalcPricing();
+}
+
+function recalcPricing() {
+  document.querySelectorAll('#tbl-pricing tbody tr').forEach(tr => {
+    const on = num(tr.querySelector('.pr-on').value);
+    const alloc = num(tr.querySelector('.pr-alloc').value);
+    const buffer = num(tr.querySelector('.pr-buffer').value);
+    const sell = Math.max(0, on - alloc - buffer);
+    const cell = tr.querySelector('.pr-sell');
+    cell.textContent = String(sell);
+    cell.className = 'pr-sell';
+    tr.classList.remove('row-red','row-amber');
+    if (sell <= 2) { tr.classList.add('row-red'); cell.classList.add('status-red'); }
+    else if (sell <= 4) { tr.classList.add('row-amber'); cell.classList.add('status-amber'); }
+    else { cell.classList.add('status-green'); }
+  });
+  renderInventoryTracker();
+}
+
+function renderInventoryTracker() {
+  const body = document.querySelector('#tbl-inventory-live tbody');
+  if (!body) return;
+  const rows = [];
+  document.querySelectorAll('#tbl-pricing tbody tr[data-type="single"]').forEach(tr => {
+    const sku = tr.cells[0].innerText.trim();
+    const name = tr.cells[1].innerText.trim();
+    const sell = num(tr.querySelector('.pr-sell').innerText);
+    let status = '<span class="pill p-green">Healthy</span>';
+    if (sell <= 2) status = '<span class="pill p-red">Critical</span>';
+    else if (sell <= 4) status = '<span class="pill p-amber">Low</span>';
+    rows.push(`<tr><td>${sku}</td><td>${name}</td><td>${sell}</td><td>${status}</td></tr>`);
+  });
+  body.innerHTML = rows.join('');
+}
+
+function initFormulaCalc() {
+  updateFormulaCalc();
+}
+
+function updateFormulaCalc() {
+  const key = document.getElementById('fc-product')?.value;
+  const batch = num(document.getElementById('fc-batch')?.value || 0);
+  const rows = formulaDefs[key] || [];
+  const tbody = document.querySelector('#tbl-formula-calc tbody');
+  if (!tbody) return;
+  let total = 0;
+  tbody.innerHTML = rows.map(([name,pct]) => {
+    total += pct;
+    return `<tr><td>${name}</td><td>${pct.toFixed(1)}%</td><td>${((batch*pct)/100).toFixed(1)}</td></tr>`;
+  }).join('');
+  const totalEl = document.getElementById('fc-total');
+  if (totalEl) totalEl.textContent = total.toFixed(1) + '%';
+}
+
+function ymd(d){
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return '';
+  return dt.toISOString().slice(0,10);
+}
+
+function batchLotCode(sku, date){
+  const clean = (date || '').replaceAll('-', '');
+  if (!sku || clean.length !== 8) return '—';
+  return `${sku}-${clean}-001`;
+}
+
+function isSoapSku(sku){ return sku.includes('GMS'); }
+
+function plusDays(date, days){
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '';
+  d.setDate(d.getDate() + days);
+  return ymd(d);
+}
+
+function updateBatchCalcPreview(){
+  const sku = document.getElementById('bc-sku')?.value || '';
+  const date = document.getElementById('bc-date')?.value || '';
+  const units = num(document.getElementById('bc-units')?.value);
+  const fill = num(document.getElementById('bc-fill')?.value);
+  const lot = batchLotCode(sku, date);
+  const cure = isSoapSku(sku) && date ? plusDays(date,42) : 'N/A';
+  const lotEl = document.getElementById('bc-lot');
+  const cureEl = document.getElementById('bc-cure');
+  const totEl = document.getElementById('bc-totalfill');
+  if (lotEl) lotEl.textContent = lot;
+  if (cureEl) cureEl.textContent = cure;
+  if (totEl) totEl.textContent = `Total fill: ${(units*fill).toFixed(1)} g`;
+}
+
+function saveBatchRuns(){
+  scheduleSave();
+}
+
+function loadBatchRuns(){
+  batchRuns = [];
+}
+
+function renderBatchRuns(){
+  const body = document.querySelector('#tbl-batch-runs tbody');
+  if (!body) return;
+  body.innerHTML = batchRuns.map((r,i)=>`<tr><td>${r.sku}</td><td>${r.date}</td><td>${r.units}</td><td>${r.fill}</td><td>${r.lot}</td><td>${r.cure}</td><td><button class="btn btn-del" onclick="delBatchRun(${i})">✕</button></td></tr>`).join('');
+}
+
+function addBatchRun(){
+  const sku = document.getElementById('bc-sku')?.value || '';
+  const date = document.getElementById('bc-date')?.value || '';
+  const units = num(document.getElementById('bc-units')?.value);
+  const fill = num(document.getElementById('bc-fill')?.value);
+  if (!sku || !date || !units || !fill) return;
+  batchRuns.unshift({sku, date, units, fill, lot:batchLotCode(sku,date), cure:isSoapSku(sku)?plusDays(date,42):'N/A'});
+  saveBatchRuns();
+  renderBatchRuns();
+  scheduleSave();
+}
+
+function delBatchRun(i){
+  batchRuns.splice(i,1);
+  saveBatchRuns();
+  renderBatchRuns();
+  scheduleSave();
+}
+
+function initLaunchCountdown(){
+  const el = document.getElementById('launch-countdown');
+  if (!el) return;
+  const now = new Date();
+  const launch = new Date('2026-08-31T00:00:00');
+  const diff = Math.ceil((launch - now) / 86400000);
+  if (diff > 0) el.textContent = `${diff} days remaining`;
+  else if (diff === 0) el.textContent = 'Launch window is live';
+  else el.textContent = `Launched ${Math.abs(diff)} days ago`;
+}
+
+function addContentRow(){
+  const body = document.querySelector('#tbl-content-calendar tbody');
+  if (!body) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="calc-input" type="date"></td>
+    <td><select class="calc-input"><option>IG</option><option>TikTok</option><option>Pinterest</option></select></td>
+    <td contenteditable="true">Format</td>
+    <td><select class="calc-input"><option>Barrier Education</option><option>Ingredient Transparency</option><option>Elevated Ritual</option><option>Small-Batch BTS</option><option>Skin Comfort</option></select></td>
+    <td contenteditable="true">Hook</td>
+    <td contenteditable="true">Caption copy</td>
+    <td><select class="calc-input"><option>Early access → link in bio</option><option>Join the list at oatearth.com/join</option></select></td>
+    <td><select class="calc-input"><option>Not Started</option><option>In Progress</option><option>Done</option></select></td>`;
+  body.appendChild(tr);
+  scheduleSave();
+}
+
+/* ──────────────────────────────────────────
    INIT
 ────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
   initDash();
+  initLaunchCountdown();
+  initCogs();
+  initPricing();
+  initFormulaCalc();
+  loadBatchRuns();
+  renderBatchRuns();
   loadSaved();
+
+  document.addEventListener('input', e => {
+    if (e.target.closest('#tbl-cogs')) recalcCogs();
+    if (e.target.closest('#tbl-pricing')) recalcPricing();
+    if (e.target.id === 'fc-batch') updateFormulaCalc();
+    if (e.target.closest('#pg-batchcalc')) updateBatchCalcPreview();
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'fc-product') updateFormulaCalc();
+    if (e.target.id === 'bc-sku' || e.target.id === 'bc-date') updateBatchCalcPreview();
+  });
+
+  updateFormulaCalc();
+  recalcCogs();
+  recalcPricing();
+  updateBatchCalcPreview();
 
   // Re-init days to launch after loadSaved (in case it was overwritten)
   const launch = new Date('2026-08-31T00:00:00');
