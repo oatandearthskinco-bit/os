@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oat &amp; Earth — Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --cream:   #F7F4EF;
+  --cream2:  #EFE9E0;
+  --cream3:  #E5DDD0;
+  --ink:     #1a1714;
+  --ink2:    #3d3830;
+  --ink3:    #6b6358;
+  --ink4:    #9e9488;
+  --gold:    #8a6c3e;
+  --gold2:   #b8924f;
+  --gold3:   #d4b07a;
+  --olive:   #6b7c5a;
+  --sage:    #8a9e7a;
+  --charcoal:#2a2520;
+  --red:     #8c3220;
+  --amber:   #7a5010;
+  --green:   #2a5e38;
+  --sidebar: 258px;
+  --hdr:     56px;
+  --border:  rgba(138,108,62,.14);
+  --border2: rgba(26,23,20,.07);
+}
+
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink2);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+button{font-family:'DM Sans',sans-serif;cursor:pointer}
+
+/* ── CONTENTEDITABLE ── */
+[contenteditable]{outline:none;border-radius:2px;transition:background .15s,box-shadow .15s;cursor:text}
+[contenteditable]:hover{background:rgba(138,108,62,.07)}
+[contenteditable]:focus{background:rgba(138,108,62,.11);box-shadow:0 0 0 1.5px rgba(138,108,62,.32)}
+
+/* ── HEADER ── */
+#hdr {
+  position:fixed;top:0;left:0;right:0;height:var(--hdr);
+  background:var(--charcoal);
+  display:flex;align-items:center;
+  padding:0 18px 0 calc(var(--sidebar) + 20px);
+  gap:10px;z-index:200;
+  border-bottom:1px solid rgba(138,108,62,.18);
+}
+#hdr-brand{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--cream2);letter-spacing:.02em;flex:1;white-space:nowrap}
+#hdr-search{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:5px 11px;color:var(--cream2);font-size:12px;width:180px;outline:none;font-family:'DM Sans',sans-serif}
+#hdr-search::placeholder{color:rgba(239,233,224,.35)}
+#hdr-search:focus{border-color:rgba(138,108,62,.5);background:rgba(255,255,255,.1)}
+.hdr-btn{background:rgba(138,108,62,.18);border:1px solid rgba(138,108,62,.32);color:var(--gold3);padding:4px 11px;border-radius:3px;font-size:11px;font-weight:500;letter-spacing:.02em;transition:background .15s;white-space:nowrap}
+.hdr-btn:hover{background:rgba(138,108,62,.32)}
+#save-pill{font-size:11px;padding:3px 10px;background:rgba(138,108,62,.14);border-radius:20px;color:var(--gold3);white-space:nowrap;transition:color .25s}
+#save-pill.saving{color:var(--gold2)}
+#save-pill.saved{color:#72c47a}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;
+  background:var(--charcoal);overflow-y:auto;z-index:100;
+  padding-top:var(--hdr);
+  border-right:1px solid rgba(138,108,62,.12);
+}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:rgba(138,108,62,.25);border-radius:2px}
+.nav-group{padding:16px 0 4px}
+.nav-group-label{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:rgba(158,148,136,.55);padding:0 18px 6px;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:7px;padding:7px 18px 7px 15px;font-size:12.5px;color:rgba(239,233,224,.58);cursor:pointer;transition:color .15s,background .15s;border-left:2.5px solid transparent;user-select:none}
+.nav-item:hover{color:var(--cream2);background:rgba(138,108,62,.08)}
+.nav-item.active{color:var(--cream);border-left-color:var(--gold);background:rgba(138,108,62,.14);font-weight:500}
+.nav-icon{font-size:9px;opacity:.6;flex-shrink:0}
+
+/* ── CONTENT AREA ── */
+#content{margin-left:var(--sidebar);margin-top:var(--hdr);padding:42px 52px 60px;min-height:calc(100vh - var(--hdr))}
+.page{display:none;animation:fadeUp .22s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE TYPOGRAPHY ── */
+.page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--ink);margin-bottom:5px;line-height:1.25}
+.page-title em{font-style:italic}
+.page-sub{font-size:12.5px;color:var(--ink4);margin-bottom:30px;letter-spacing:.01em}
+.section-label{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink4);font-weight:500;margin:28px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--border2)}
+.section-label:first-of-type{margin-top:0}
+h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:400;color:var(--ink);margin-bottom:8px}
+
+/* ── CARDS ── */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:24px}
+.card{background:var(--cream2);border:1px solid var(--border);border-radius:5px;padding:17px 19px}
+.card-lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-bottom:5px;font-weight:500}
+.card-val{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);font-weight:500;line-height:1.2}
+.card-note{font-size:11px;color:var(--ink4);margin-top:3px}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:4px;padding:13px 17px;margin:14px 0;font-size:13px;line-height:1.65;border-left:3px solid}
+.c-danger{background:rgba(140,50,32,.06);border-color:var(--red);color:var(--red)}
+.c-warn  {background:rgba(122,80,16,.06);border-color:var(--amber);color:var(--amber)}
+.c-info  {background:rgba(138,108,62,.07);border-color:var(--gold);color:var(--ink3)}
+.c-ok    {background:rgba(42,94,56,.06);border-color:var(--green);color:var(--green)}
+.callout strong{font-weight:500}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);padding:7px 11px;text-align:left;border-bottom:1px solid var(--border2);background:var(--cream2);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--gold)}
+th.sorted-asc::after{content:' ↑';font-size:9px}
+th.sorted-desc::after{content:' ↓';font-size:9px}
+td{padding:8px 11px;border-bottom:1px solid var(--border2);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(138,108,62,.03)}
+.tbl-actions{display:flex;gap:7px;margin-top:7px}
+
+/* ── BUTTONS ── */
+.btn{background:none;border:1px solid var(--border);color:var(--ink3);padding:4px 10px;border-radius:3px;font-size:11px;font-weight:400;transition:all .15s}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn-del{color:var(--red);border-color:rgba(140,50,32,.18)}
+.btn-del:hover{border-color:var(--red);background:rgba(140,50,32,.04)}
+.btn-primary{background:var(--gold);border-color:var(--gold);color:var(--cream);padding:6px 16px;font-size:12px}
+.btn-primary:hover{background:var(--gold2);border-color:var(--gold2)}
+
+/* ── PILLS ── */
+.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:.03em;white-space:nowrap}
+.p-red   {background:rgba(140,50,32,.1);color:var(--red)}
+.p-amber {background:rgba(122,80,16,.1);color:var(--amber)}
+.p-green {background:rgba(42,94,56,.1);color:var(--green)}
+.p-gold  {background:rgba(138,108,62,.12);color:var(--gold)}
+.p-gray  {background:rgba(107,99,88,.1);color:var(--ink3)}
+.p-locked{background:rgba(42,94,56,.09);color:var(--green);display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+
+/* ── CHECKLIST ── */
+.checklist{list-style:none;margin:6px 0}
+.checklist li{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:13px}
+.checklist li:last-child{border-bottom:none}
+.checklist input[type=checkbox]{margin-top:3px;accent-color:var(--gold);width:13px;height:13px;flex-shrink:0}
+.item-text{flex:1}
+.item-text.done{text-decoration:line-through;color:var(--ink4)}
+
+/* ── TABS ── */
+.tab-row{display:flex;border-bottom:1px solid var(--border2);margin-bottom:18px;flex-wrap:wrap;gap:0}
+.tab-btn{padding:8px 15px;font-size:12px;cursor:pointer;border:none;background:none;color:var(--ink4);border-bottom:2px solid transparent;transition:color .15s;font-family:'DM Sans',sans-serif;margin-bottom:-1px;white-space:nowrap}
+.tab-btn:hover{color:var(--ink2)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:500}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── INCI BLOCK ── */
+.inci-wrap{position:relative;margin:8px 0}
+.inci-block{background:var(--cream2);border:1px solid var(--border);border-radius:4px;padding:13px 44px 13px 14px;font-size:12px;line-height:1.85;color:var(--ink3)}
+.inci-copy{position:absolute;top:8px;right:8px;background:none;border:1px solid var(--border);color:var(--ink4);padding:2px 8px;border-radius:2px;font-size:10px;transition:all .15s}
+.inci-copy:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── FORMULA TABLE ── */
+.formula-tbl td:nth-child(2){font-variant-numeric:tabular-nums;text-align:right;width:60px}
+.formula-tbl td:nth-child(3){width:60px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ── PLACEHOLDER PAGE ── */
+.placeholder-page{display:flex;flex-direction:column;align-items:flex-start;padding:48px 0;gap:10px}
+.placeholder-page .coming{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--ink4)}
+
+/* ── MISC ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
+.num-red{color:var(--red);font-weight:500}
+.num-amber{color:var(--amber);font-weight:500}
+.num-green{color:var(--green)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:860px){
+  :root{--sidebar:0px}
+  #sidebar{transform:translateX(-258px);width:258px;transition:transform .25s}
+  #sidebar.open{transform:translateX(0)}
+  #content{padding:22px 18px 50px}
+  .card-grid{grid-template-columns:1fr 1fr}
+  .two-col,.three-col{grid-template-columns:1fr}
+}
+@media print{#hdr,#sidebar{display:none}#content{margin:0;padding:20px}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<header id="hdr">
+  <div id="hdr-brand">Oat &amp; Earth — OS</div>
+  <input id="hdr-search" type="text" placeholder="Search pages…" oninput="searchNav(this.value)">
+  <span id="save-pill">Saved ✓</span>
+  <button class="hdr-btn" onclick="exportJSON()">Export JSON</button>
+  <button class="hdr-btn" onclick="exportHTML()">Export HTML</button>
+  <button class="hdr-btn" onclick="importJSON()">Import JSON</button>
+</header>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<nav id="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-label">Command</div>
+    <div class="nav-item active" data-page="dashboard"    onclick="go('dashboard')">   <span class="nav-icon">◈</span>Dashboard</div>
+    <div class="nav-item"        data-page="audit"        onclick="go('audit')">        <span class="nav-icon">⊛</span>Audit &amp; Conflicts</div>
+    <div class="nav-item"        data-page="emailplatform" onclick="go('emailplatform')"><span class="nav-icon">◉</span>Email Platform</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Products &amp; Formulas</div>
+    <div class="nav-item" data-page="skumaster"     onclick="go('skumaster')">    <span class="nav-icon">▪</span>SKU Master</div>
+    <div class="nav-item" data-page="formulas"      onclick="go('formulas')">     <span class="nav-icon">▪</span>Formulas &amp; INCI</div>
+    <div class="nav-item" data-page="formulacalc"   onclick="go('formulacalc')">  <span class="nav-icon">▪</span>Formula Calculator</div>
+    <div class="nav-item" data-page="batchcalc"     onclick="go('batchcalc')">    <span class="nav-icon">▪</span>Batch Calculator</div>
+    <div class="nav-item" data-page="labelcomp"     onclick="go('labelcomp')">    <span class="nav-icon">▪</span>Labels &amp; Compliance</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Operations</div>
+    <div class="nav-item" data-page="cogs"          onclick="go('cogs')">         <span class="nav-icon">▪</span>COGS Sheet</div>
+    <div class="nav-item" data-page="pricing"       onclick="go('pricing')">      <span class="nav-icon">▪</span>Pricing &amp; Quantities</div>
+    <div class="nav-item" data-page="purchaselist"  onclick="go('purchaselist')"> <span class="nav-icon">▪</span>Purchase List</div>
+    <div class="nav-item" data-page="production"    onclick="go('production')">   <span class="nav-icon">▪</span>Production &amp; Batches</div>
+    <div class="nav-item" data-page="suppliers"     onclick="go('suppliers')">    <span class="nav-icon">▪</span>Suppliers</div>
+    <div class="nav-item" data-page="inventory"     onclick="go('inventory')">    <span class="nav-icon">▪</span>Inventory</div>
+    <div class="nav-item" data-page="labelpack"     onclick="go('labelpack')">    <span class="nav-icon">▪</span>Label &amp; Packaging</div>
+    <div class="nav-item" data-page="shipping"      onclick="go('shipping')">     <span class="nav-icon">▪</span>Shipping Calculator</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Growth</div>
+    <div class="nav-item" data-page="launch"        onclick="go('launch')">       <span class="nav-icon">▪</span>Launch Planning</div>
+    <div class="nav-item" data-page="contentcal"    onclick="go('contentcal')">   <span class="nav-icon">▪</span>Content Calendar</div>
+    <div class="nav-item" data-page="emailseq"      onclick="go('emailseq')">     <span class="nav-icon">▪</span>Email Sequences</div>
+    <div class="nav-item" data-page="shopify"       onclick="go('shopify')">      <span class="nav-icon">▪</span>Shopify Setup</div>
+    <div class="nav-item" data-page="wholesale"     onclick="go('wholesale')">    <span class="nav-icon">▪</span>Wholesale</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Admin</div>
+    <div class="nav-item" data-page="openitems"     onclick="go('openitems')">    <span class="nav-icon">▪</span>Open Items</div>
+    <div class="nav-item" data-page="finance"       onclick="go('finance')">      <span class="nav-icon">▪</span>Finance</div>
+    <div class="nav-item" data-page="brand"         onclick="go('brand')">        <span class="nav-icon">▪</span>Brand &amp; Voice</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════ CONTENT ═══════════════════════ -->
+<main id="content">
+
+<!-- ════════════════════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════════════════════ -->
+<section id="pg-dashboard" class="page active">
+  <div class="page-title"><em id="dash-greeting">Good morning.</em></div>
+  <div class="page-sub" id="dash-date"></div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-lbl">Launch Date</div>
+      <div class="card-val" style="font-size:15px;margin-top:3px" contenteditable="true">August 31, 2026</div>
+      <div class="card-note" style="color:var(--red);font-size:10px;letter-spacing:.04em;text-transform:uppercase;margin-top:4px">Internal only — never share publicly</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Days to Launch</div>
+      <div class="card-val" id="days-launch">—</div>
+      <div class="card-note">auto-calculated</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Active SKUs</div>
+      <div class="card-val">8</div>
+      <div class="card-note">+ 6 bundles</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Open Items</div>
+      <div class="card-val" style="color:var(--red)" contenteditable="true">3</div>
+      <div class="card-note" contenteditable="true">2 blocking</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Brand Readiness</div>
+      <div class="card-val" contenteditable="true">85%</div>
+      <div class="card-note" contenteditable="true">formulas locked · labels pending</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Production Space</div>
+      <div class="card-val" contenteditable="true">0%</div>
+      <div class="card-note" contenteditable="true">garage studio — setup pending</div>
+    </div>
+  </div>
+
+  <div class="callout c-danger">
+    <strong>Hard Blockers</strong><br>
+    <span contenteditable="true">
+      OI-001: MOQ conflict ($200 vs $250) — confirm tallow supplier MOQ in writing before ordering.<br>
+      OI-003: Crème 4oz only 3 sellable singles — reduce bundle caps or produce another batch before launch.
+    </span>
+  </div>
+
+  <div class="section-label">This Week's Priorities</div>
+  <ul class="checklist" id="dash-priorities">
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">QC sign-off on all label designs</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Resolve MOQ conflict — confirm tallow supplier MOQ in writing (OI-001)</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Collect COAs from all ingredient suppliers before first batch</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Set margin targets — DTC + wholesale (OI-002)</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Finalize bundle caps vs. sellable singles — OI-003</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Schedule first full production run (all Wave 1 SKUs)</span></li>
+    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Build Klaviyo welcome flow + launch countdown</span></li>
+  </ul>
+  <div class="tbl-actions">
+    <button class="btn" onclick="addCheckItem('dash-priorities')">+ Add Priority</button>
+  </div>
+
+  <div class="section-label" style="margin-top:28px">Quick Navigation</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Page</th><th>Purpose</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#" onclick="go('audit');return false">Audit &amp; Conflicts</a></td><td contenteditable="true">Open items + blockers</td><td><span class="pill p-red">3 open</span></td></tr>
+        <tr><td><a href="#" onclick="go('skumaster');return false">SKU Master</a></td><td contenteditable="true">All 8 singles + 6 bundles</td><td><span class="pill p-green">Current</span></td></tr>
+        <tr><td><a href="#" onclick="go('formulas');return false">Formulas &amp; INCI</a></td><td contenteditable="true">Locked INCI strings, all 7 products</td><td><span class="pill p-green">Locked</span></td></tr>
+        <tr><td><a href="#" onclick="go('purchaselist');return false">Purchase List</a></td><td contenteditable="true">Phased purchasing — all phases</td><td><span class="pill p-amber">In progress</span></td></tr>
+        <tr><td><a href="#" onclick="go('launch');return false">Launch Planning</a></td><td contenteditable="true">Phase timeline + hard blockers</td><td><span class="pill p-amber">Active</span></td></tr>
+        <tr><td><a href="#" onclick="go('contentcal');return false">Content Calendar</a></td><td contenteditable="true">IG · TikTok · Pinterest</td><td><span class="pill p-gold">Draft</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     AUDIT & CONFLICTS
+════════════════════════════════════════════════════════ -->
+<section id="pg-audit" class="page">
+  <div class="page-title">Audit &amp; Conflicts</div>
+  <div class="page-sub">Open items, blockers, and decisions needed</div>
+
+  <div class="tbl-wrap">
+    <table id="tbl-oi">
+      <thead>
+        <tr>
+          <th onclick="sortTable('tbl-oi',0)">ID</th>
+          <th onclick="sortTable('tbl-oi',1)">Severity</th>
+          <th onclick="sortTable('tbl-oi',2)">Title</th>
+          <th onclick="sortTable('tbl-oi',3)">Description</th>
+          <th onclick="sortTable('tbl-oi',4)">Decision Needed</th>
+          <th onclick="sortTable('tbl-oi',5)">Owner</th>
+          <th onclick="sortTable('tbl-oi',6)">Due</th>
+          <th onclick="sortTable('tbl-oi',7)">Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td contenteditable="true">OI-001</td>
+          <td><span class="pill p-red" contenteditable="true">Critical</span></td>
+          <td contenteditable="true">MOQ conflict — tallow supplier</td>
+          <td contenteditable="true">Two conflicting documents show $200 vs $250 MOQ for the tallow supplier. Cannot place order until resolved.</td>
+          <td contenteditable="true">Email supplier directly and request written confirmation of true MOQ before placing any order.</td>
+          <td contenteditable="true">Ashley</td>
+          <td contenteditable="true">ASAP</td>
+          <td><span class="pill p-red" contenteditable="true">Open</span></td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OI-002</td>
+          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
+          <td contenteditable="true">Margin targets not set</td>
+          <td contenteditable="true">DTC and wholesale margin targets have not been formally defined. COGS sheet can't be evaluated without them.</td>
+          <td contenteditable="true">Set DTC target (suggest 65%) and wholesale target (suggest 45%). Confirm in writing before finalizing pricing.</td>
+          <td contenteditable="true">Ashley</td>
+          <td contenteditable="true">Before pricing finalization</td>
+          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OI-003</td>
+          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
+          <td contenteditable="true">Bundle cap pressure — Crème 4oz</td>
+          <td contenteditable="true">Crème 4oz has only 3 sellable singles remaining after bundle allocations. Both Barrier Sets use the 4oz — if both bundle caps sell through, no single units remain.</td>
+          <td contenteditable="true">Either reduce Barrier Set bundle caps (currently 9 each) OR produce an additional batch of Crème 4oz before launch.</td>
+          <td contenteditable="true">Ashley</td>
+          <td contenteditable="true">Before launch</td>
+          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl-actions">
+    <button class="btn" onclick="addRow('tbl-oi', ['OI-00?','<span class=\'pill p-gray\'>Active</span>','Title','Description','Decision needed','Ashley','—','<span class=\'pill p-gray\'>Open</span>'])">+ Add Open Item</button>
+  </div>
+
+  <div class="callout c-info" style="margin-top:20px">
+    <strong>Note:</strong> Items marked Critical block purchasing and production. Resolve OI-001 before placing any ingredient order. OI-002 and OI-003 must be resolved before launch.
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SKU MASTER
+════════════════════════════════════════════════════════ -->
+<section id="pg-skumaster" class="page">
+  <div class="page-title">SKU Master</div>
+  <div class="page-sub">All products and bundles — single source of truth</div>
+
+  <div class="callout c-info">
+    <strong>FOUNDERS15</strong> — 15% off singles only. Does not apply to bundles. No exceptions.
+  </div>
+
+  <div class="section-label">Singles — 8 Products</div>
+  <div class="tbl-wrap">
+    <table id="tbl-singles">
+      <thead>
+        <tr>
+          <th onclick="sortTable('tbl-singles',0)">SKU</th>
+          <th onclick="sortTable('tbl-singles',1)">Product Name</th>
+          <th onclick="sortTable('tbl-singles',2)">Variant / Scent</th>
+          <th onclick="sortTable('tbl-singles',3)">Size</th>
+          <th onclick="sortTable('tbl-singles',4)">Container</th>
+          <th onclick="sortTable('tbl-singles',5)">Price</th>
+          <th onclick="sortTable('tbl-singles',6)">PAO</th>
+          <th onclick="sortTable('tbl-singles',7)">Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td contenteditable="true">OE-LBC-2OZ</td>
+          <td contenteditable="true">Lipid Barrier Crème</td>
+          <td contenteditable="true">Bare (unscented)</td>
+          <td contenteditable="true">2 oz / 56g</td>
+          <td contenteditable="true">Frosted glass jar</td>
+          <td contenteditable="true">$30</td>
+          <td contenteditable="true">12M</td>
+          <td contenteditable="true"><strong>HERO</strong> · unscented · anhydrous</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-LBC-4OZ</td>
+          <td contenteditable="true">Lipid Barrier Crème</td>
+          <td contenteditable="true">Bare (unscented)</td>
+          <td contenteditable="true">4 oz / 113g</td>
+          <td contenteditable="true">Frosted glass jar</td>
+          <td contenteditable="true">$54</td>
+          <td contenteditable="true">12M</td>
+          <td contenteditable="true">Unscented · anhydrous · ⚠️ OI-003</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-RBP-EMBER</td>
+          <td contenteditable="true">Refining Body Polish</td>
+          <td contenteditable="true">Ember</td>
+          <td contenteditable="true">8 oz / 227g</td>
+          <td contenteditable="true">Amber PET jar</td>
+          <td contenteditable="true">$42</td>
+          <td contenteditable="true">12M</td>
+          <td contenteditable="true">Amyris · vetiver (Haiti) · frankincense CO2</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-RBP-GROVE</td>
+          <td contenteditable="true">Refining Body Polish</td>
+          <td contenteditable="true">Grove</td>
+          <td contenteditable="true">8 oz / 227g</td>
+          <td contenteditable="true">Amber PET jar</td>
+          <td contenteditable="true">$42</td>
+          <td contenteditable="true">12M</td>
+          <td contenteditable="true">Vanilla oleoresin · cardamom · sandalwood</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-MOS-BARE</td>
+          <td contenteditable="true">Mineral &amp; Oat Soak</td>
+          <td contenteditable="true">Bare (unscented)</td>
+          <td contenteditable="true">10 oz / 284g</td>
+          <td contenteditable="true">Matte black mylar pouch</td>
+          <td contenteditable="true">$32</td>
+          <td contenteditable="true">24M</td>
+          <td contenteditable="true">Unscented · allergen: goat milk</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-MOS-DRIFT</td>
+          <td contenteditable="true">Mineral &amp; Oat Soak</td>
+          <td contenteditable="true">Drift</td>
+          <td contenteditable="true">10 oz / 284g</td>
+          <td contenteditable="true">Matte black mylar pouch</td>
+          <td contenteditable="true">$32</td>
+          <td contenteditable="true">24M</td>
+          <td contenteditable="true">Lavender · bergamot FCF · eucalyptus · roman chamomile · allergen: goat milk</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-GMS-BARE</td>
+          <td contenteditable="true">Lipid + Milk Cleansing Bar</td>
+          <td contenteditable="true">Bare (unscented)</td>
+          <td contenteditable="true">4.7 oz / 134g</td>
+          <td contenteditable="true">Kraft bar wrap</td>
+          <td contenteditable="true">$14</td>
+          <td contenteditable="true">—</td>
+          <td contenteditable="true">Cold process · 7% superfat · allergens: goat milk, honey</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-GMS-SOLACE</td>
+          <td contenteditable="true">Lipid + Milk Cleansing Bar</td>
+          <td contenteditable="true">Solace</td>
+          <td contenteditable="true">4.7 oz / 134g</td>
+          <td contenteditable="true">Kraft bar wrap</td>
+          <td contenteditable="true">$14</td>
+          <td contenteditable="true">—</td>
+          <td contenteditable="true">Roman chamomile CO2 · vanilla oleoresin · sandalwood · allergens: goat milk, honey</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl-actions">
+    <button class="btn" onclick="addRow('tbl-singles', ['OE-???','Product Name','Variant','Size','Container','$0','12M','Notes'])">+ Add SKU</button>
+  </div>
+
+  <div class="section-label" style="margin-top:30px">Bundles — 6 Products</div>
+  <div class="tbl-wrap">
+    <table id="tbl-bundles">
+      <thead>
+        <tr>
+          <th onclick="sortTable('tbl-bundles',0)">Bundle SKU</th>
+          <th onclick="sortTable('tbl-bundles',1)">Name</th>
+          <th onclick="sortTable('tbl-bundles',2)">Includes</th>
+          <th onclick="sortTable('tbl-bundles',3)">Retail Price</th>
+          <th onclick="sortTable('tbl-bundles',4)">Savings</th>
+          <th onclick="sortTable('tbl-bundles',5)">Shopify Cap</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-BARR-1</td>
+          <td contenteditable="true">Barrier Set — Ember</td>
+          <td contenteditable="true">Crème 4oz + Polish Ember</td>
+          <td contenteditable="true">$84</td>
+          <td contenteditable="true">$12</td>
+          <td contenteditable="true">9</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-BARR-2</td>
+          <td contenteditable="true">Barrier Set — Grove</td>
+          <td contenteditable="true">Crème 4oz + Polish Grove</td>
+          <td contenteditable="true">$84</td>
+          <td contenteditable="true">$12</td>
+          <td contenteditable="true">9</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-DISC-1</td>
+          <td contenteditable="true">Discovery Set — Ember</td>
+          <td contenteditable="true">Soak Bare + Polish Ember + Bar Bare + Crème 2oz</td>
+          <td contenteditable="true">$104</td>
+          <td contenteditable="true">$14</td>
+          <td contenteditable="true">5</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-DISC-2</td>
+          <td contenteditable="true">Discovery Set — Grove</td>
+          <td contenteditable="true">Soak Drift + Polish Grove + Bar Solace + Crème 2oz</td>
+          <td contenteditable="true">$104</td>
+          <td contenteditable="true">$14</td>
+          <td contenteditable="true">5</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-SOAK</td>
+          <td contenteditable="true">Mineral Soak Set</td>
+          <td contenteditable="true">Soak Bare + Soak Drift</td>
+          <td contenteditable="true">$58</td>
+          <td contenteditable="true">$6</td>
+          <td contenteditable="true">14</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">OE-BUNDLE-SOAP</td>
+          <td contenteditable="true">Soap Duo</td>
+          <td contenteditable="true">Bar Bare + Bar Solace</td>
+          <td contenteditable="true">$25</td>
+          <td contenteditable="true">$3</td>
+          <td contenteditable="true">10</td>
+          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl-actions">
+    <button class="btn" onclick="addRow('tbl-bundles', ['OE-BUNDLE-???','Bundle Name','Includes','$0','$0','0'])">+ Add Bundle</button>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     FORMULAS & INCI
+════════════════════════════════════════════════════════ -->
+<section id="pg-formulas" class="page">
+  <div class="page-title">Formulas &amp; INCI</div>
+  <div class="page-sub">Locked formulas — INCI strings and ingredient percentages</div>
+
+  <div class="tab-row" id="ftab-row">
+    <button class="tab-btn active" onclick="switchTab('ftab-row','ftab-','creme',this)">Crème</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','ember',this)">Polish Ember</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','grove',this)">Polish Grove</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','soak-bare',this)">Soak Bare</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','soak-drift',this)">Soak Drift</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','bar-bare',this)">Bar Bare</button>
+    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','bar-solace',this)">Bar Solace</button>
+  </div>
+
+  <!-- CRÈME -->
+  <div class="tab-pane active" id="ftab-creme">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Lipid Barrier Crème</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-creme">Ingredients: Tallow, Rosa Canina Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Simmondsia Chinensis (Jojoba) Seed Oil, Squalane, Calendula Officinalis Flower Extract (and) Helianthus Annuus (Sunflower) Seed Oil, Borago Officinalis Seed Oil, Hippophae Rhamnoides Fruit Oil, Cera Alba, Boswellia Serrata Resin Extract, Maranta Arundinacea Root Powder, Tocopherol.</div>
+      <button class="inci-copy" onclick="copyEl('inci-creme',this)">Copy</button>
+    </div>
+    <div class="callout c-warn" style="margin-top:10px" contenteditable="true">
+      <strong>Heat note:</strong> Add calendula infused sunflower oil and frankincense CO2 resin at or below 140°F / 60°C to preserve active constituents.
+    </div>
+    <div class="section-label">Formula Percentages</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-creme-pct">
+        <thead><tr><th onclick="sortTable('tbl-creme-pct',0)">Ingredient</th><th onclick="sortTable('tbl-creme-pct',1)">%</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Tallow (grass-fed, rendered)</td><td contenteditable="true">55%</td><td contenteditable="true">Base fat · primary barrier lipid</td></tr>
+          <tr><td contenteditable="true">Rosehip seed oil (Rosa Canina)</td><td contenteditable="true">10%</td><td contenteditable="true">Rich in linoleic acid</td></tr>
+          <tr><td contenteditable="true">Meadowfoam seed oil (Limnanthes Alba)</td><td contenteditable="true">8%</td><td contenteditable="true">Oxidative stability · emollient</td></tr>
+          <tr><td contenteditable="true">Jojoba oil (Simmondsia Chinensis)</td><td contenteditable="true">7%</td><td contenteditable="true">Liquid wax ester · non-greasy</td></tr>
+          <tr><td contenteditable="true">Squalane (olive-derived)</td><td contenteditable="true">5%</td><td contenteditable="true">Lightweight hydration · stability</td></tr>
+          <tr><td contenteditable="true">Calendula infused sunflower oil</td><td contenteditable="true">5%</td><td contenteditable="true">Add ≤140°F/60°C · soothing</td></tr>
+          <tr><td contenteditable="true">Borage seed oil (Borago Officinalis)</td><td contenteditable="true">3%</td><td contenteditable="true">High GLA content</td></tr>
+          <tr><td contenteditable="true">Sea buckthorn CO2 (Hippophae Rhamnoides)</td><td contenteditable="true">2%</td><td contenteditable="true">Dense in carotenoids · use sparingly</td></tr>
+          <tr><td contenteditable="true">Beeswax (Cera Alba)</td><td contenteditable="true">2%</td><td contenteditable="true">Structure · occlusivity</td></tr>
+          <tr><td contenteditable="true">Frankincense CO2 resin (Boswellia Serrata)</td><td contenteditable="true">1%</td><td contenteditable="true">Add ≤140°F/60°C · Eden Botanicals FairWild CO2 · Somalia</td></tr>
+          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">1%</td><td contenteditable="true">Texture · absorbs excess oil</td></tr>
+          <tr><td contenteditable="true">Tocopherol (Vitamin E, mixed)</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant preservation · includes 0.5% Vit E</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-creme-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+    <div class="section-label">Notes</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">Anhydrous formula — no water phase. No preservative required. Melt-and-pour method. Store below 75°F. PAO 12M once opened.</div>
+  </div>
+
+  <!-- POLISH EMBER -->
+  <div class="tab-pane" id="ftab-ember">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Refining Body Polish — Ember</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-ember">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Tocopherol, Amyris Balsamifera Bark Oil, Vetiveria Zizanoides Root Oil, Boswellia Carterii Oil.</div>
+      <button class="inci-copy" onclick="copyEl('inci-ember',this)">Copy</button>
+    </div>
+    <div class="section-label">Scent Profile</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
+      Amyris · Vetiver (double-distilled Haiti, Eden Botanicals) · Frankincense CO2<br>
+      EO blend at 0.5% total: Amyris 50% · Vetiver 30% · Frankincense 20%<br>
+      INCI update locked: Vetiveria Zizanoides Root Oil replaces previous cedar.
+    </div>
+    <div class="section-label">Formula Percentages (base same as Grove)</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-ember-pct">
+        <thead><tr><th onclick="sortTable('tbl-ember-pct',0)">Ingredient</th><th onclick="sortTable('tbl-ember-pct',1)">%</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Cane sugar (Sucrose)</td><td contenteditable="true">41%</td><td contenteditable="true">Primary exfoliant · fine grain</td></tr>
+          <tr><td contenteditable="true">Tallow (grass-fed, rendered)</td><td contenteditable="true">10%</td><td contenteditable="true">Skin-compatible lipid</td></tr>
+          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">9%</td><td contenteditable="true">Mineral-rich secondary exfoliant</td></tr>
+          <tr><td contenteditable="true">Mango seed butter (Mangifera Indica)</td><td contenteditable="true">8%</td><td contenteditable="true">Emollient · conditioning</td></tr>
+          <tr><td contenteditable="true">Colloidal oat flour (Avena Sativa)</td><td contenteditable="true">7%</td><td contenteditable="true">Soothing · calming</td></tr>
+          <tr><td contenteditable="true">Jojoba oil (Simmondsia Chinensis)</td><td contenteditable="true">5%</td><td contenteditable="true">Liquid wax ester</td></tr>
+          <tr><td contenteditable="true">Meadowfoam seed oil (Limnanthes Alba)</td><td contenteditable="true">4%</td><td contenteditable="true">Oxidative stability</td></tr>
+          <tr><td contenteditable="true">Pink Himalayan salt (Sodium Chloride)</td><td contenteditable="true">4%</td><td contenteditable="true">Texture variation</td></tr>
+          <tr><td contenteditable="true">Ghassoul clay</td><td contenteditable="true">3%</td><td contenteditable="true">Detoxifying clay · mineral-rich</td></tr>
+          <tr><td contenteditable="true">Rosehip seed oil (Rosa Canina)</td><td contenteditable="true">2%</td><td contenteditable="true">Linoleic-rich oil</td></tr>
+          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">2%</td><td contenteditable="true">Texture · slip</td></tr>
+          <tr><td contenteditable="true">Squalane (olive-derived)</td><td contenteditable="true">2%</td><td contenteditable="true">Lightweight emollient</td></tr>
+          <tr><td contenteditable="true">Rosemary CO2 extract</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant · preservation</td></tr>
+          <tr><td contenteditable="true">Tocopherol (Vitamin E, mixed)</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant</td></tr>
+          <tr><td contenteditable="true">Ember EO blend (Amyris/Vetiver/Frankincense)</td><td contenteditable="true">0.5%</td><td contenteditable="true">50% Amyris · 30% Vetiver · 20% Frankincense</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-ember-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+  <!-- POLISH GROVE -->
+  <div class="tab-pane" id="ftab-grove">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Refining Body Polish — Grove</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-grove">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Vanilla Planifolia Fruit Extract, Tocopherol, Amyris Balsamifera Bark Oil, Elettaria Cardamomum Seed Oil, Santalum Album Oil.</div>
+      <button class="inci-copy" onclick="copyEl('inci-grove',this)">Copy</button>
+    </div>
+    <div class="section-label">Scent Profile</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
+      Vanilla oleoresin · Cardamom · Sandalwood<br>
+      EO blend at 0.5% total: Sandalwood 60% · Cardamom 25% · Vanilla oleoresin 15%
+    </div>
+    <div class="section-label">Formula Percentages (base same as Ember)</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-grove-pct">
+        <thead><tr><th onclick="sortTable('tbl-grove-pct',0)">Ingredient</th><th onclick="sortTable('tbl-grove-pct',1)">%</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Cane sugar (Sucrose)</td><td contenteditable="true">41%</td><td contenteditable="true">Primary exfoliant</td></tr>
+          <tr><td contenteditable="true">Tallow</td><td contenteditable="true">10%</td><td contenteditable="true">Skin-compatible lipid</td></tr>
+          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">9%</td><td contenteditable="true">Secondary exfoliant</td></tr>
+          <tr><td contenteditable="true">Mango seed butter</td><td contenteditable="true">8%</td><td contenteditable="true">Emollient</td></tr>
+          <tr><td contenteditable="true">Colloidal oat flour</td><td contenteditable="true">7%</td><td contenteditable="true">Soothing</td></tr>
+          <tr><td contenteditable="true">Jojoba oil</td><td contenteditable="true">5%</td><td contenteditable="true">Liquid wax ester</td></tr>
+          <tr><td contenteditable="true">Meadowfoam seed oil</td><td contenteditable="true">4%</td><td contenteditable="true">Oxidative stability</td></tr>
+          <tr><td contenteditable="true">Pink Himalayan salt</td><td contenteditable="true">4%</td><td contenteditable="true">Texture variation</td></tr>
+          <tr><td contenteditable="true">Ghassoul clay</td><td contenteditable="true">3%</td><td contenteditable="true">Detoxifying</td></tr>
+          <tr><td contenteditable="true">Rosehip seed oil</td><td contenteditable="true">2%</td><td contenteditable="true">Linoleic-rich</td></tr>
+          <tr><td contenteditable="true">Arrowroot powder</td><td contenteditable="true">2%</td><td contenteditable="true">Texture</td></tr>
+          <tr><td contenteditable="true">Squalane</td><td contenteditable="true">2%</td><td contenteditable="true">Lightweight emollient</td></tr>
+          <tr><td contenteditable="true">Rosemary CO2 extract</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant</td></tr>
+          <tr><td contenteditable="true">Vanilla Planifolia Fruit Extract</td><td contenteditable="true">0.5%</td><td contenteditable="true">INCI name for vanilla oleoresin</td></tr>
+          <tr><td contenteditable="true">Tocopherol (Vitamin E)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Antioxidant</td></tr>
+          <tr><td contenteditable="true">Grove EO blend (Sandalwood/Cardamom/Vanilla)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Sandalwood 60% · Cardamom 25% · Vanilla oleoresin 15%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-grove-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+  <!-- SOAK BARE -->
+  <div class="tab-pane" id="ftab-soak-bare">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Mineral &amp; Oat Soak — Bare</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-soak-bare">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract.</div>
+      <button class="inci-copy" onclick="copyEl('inci-soak-bare',this)">Copy</button>
+    </div>
+    <div class="callout c-warn" contenteditable="true">
+      <strong>Allergen statement required on label:</strong> Contains goat milk.
+    </div>
+    <div class="section-label">Formula Percentages</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-soak-bare-pct">
+        <thead><tr><th onclick="sortTable('tbl-soak-bare-pct',0)">Ingredient</th><th onclick="sortTable('tbl-soak-bare-pct',1)">%</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Magnesium chloride</td><td contenteditable="true">30%</td><td contenteditable="true">Primary mineral · muscle recovery</td></tr>
+          <tr><td contenteditable="true">Colloidal oat flour (Avena Sativa)</td><td contenteditable="true">23%</td><td contenteditable="true">Soothing · milky water</td></tr>
+          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">20%</td><td contenteditable="true">Mineral-rich salt</td></tr>
+          <tr><td contenteditable="true">Epsom salt (Magnesium Sulfate)</td><td contenteditable="true">5%</td><td contenteditable="true">Supplementary mineral</td></tr>
+          <tr><td contenteditable="true">Pink Himalayan salt (Sodium Chloride)</td><td contenteditable="true">5%</td><td contenteditable="true">Visual interest · trace minerals</td></tr>
+          <tr><td contenteditable="true">Goat milk powder (Capra Hircus)</td><td contenteditable="true">3%</td><td contenteditable="true">Lactic acid · conditioning · ALLERGEN</td></tr>
+          <tr><td contenteditable="true">Sodium bicarbonate</td><td contenteditable="true">2%</td><td contenteditable="true">pH buffer · softening</td></tr>
+          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">1%</td><td contenteditable="true">Flow aid · anti-caking</td></tr>
+          <tr><td contenteditable="true">Chamomile extract (Chamomilla Recutita)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Soothing · anti-inflammatory</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-soak-bare-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+  <!-- SOAK DRIFT -->
+  <div class="tab-pane" id="ftab-soak-drift">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Mineral &amp; Oat Soak — Drift</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-soak-drift">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract, Lavandula Angustifolia (Lavender) Oil, Eucalyptus Globulus Leaf Oil, Citrus Aurantium Bergamia (Bergamot) Peel Oil, Anthemis Nobilis Flower Oil.</div>
+      <button class="inci-copy" onclick="copyEl('inci-soak-drift',this)">Copy</button>
+    </div>
+    <div class="callout c-warn" contenteditable="true">
+      <strong>Allergen statement required on label:</strong> Contains goat milk.
+    </div>
+    <div class="section-label">Scent Profile</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
+      Lavender · Bergamot FCF · Eucalyptus · Roman chamomile<br>
+      EO blend at 0.5% total: Lavender 60% · Bergamot FCF 25% · Eucalyptus 10% · Roman chamomile 5%<br>
+      Note: Bergamot is FCF (furanocoumarin-free) — safe for rinse-off applications.
+    </div>
+    <div class="section-label">Formula Percentages (base same as Bare)</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-soak-drift-pct">
+        <thead><tr><th onclick="sortTable('tbl-soak-drift-pct',0)">Ingredient</th><th onclick="sortTable('tbl-soak-drift-pct',1)">%</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Magnesium chloride</td><td contenteditable="true">30%</td><td contenteditable="true">Primary mineral</td></tr>
+          <tr><td contenteditable="true">Colloidal oat flour</td><td contenteditable="true">23%</td><td contenteditable="true">Soothing</td></tr>
+          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">20%</td><td contenteditable="true">Mineral-rich</td></tr>
+          <tr><td contenteditable="true">Epsom salt</td><td contenteditable="true">5%</td><td contenteditable="true">Supplementary mineral</td></tr>
+          <tr><td contenteditable="true">Pink Himalayan salt</td><td contenteditable="true">5%</td><td contenteditable="true">Visual · trace minerals</td></tr>
+          <tr><td contenteditable="true">Goat milk powder</td><td contenteditable="true">3%</td><td contenteditable="true">ALLERGEN</td></tr>
+          <tr><td contenteditable="true">Sodium bicarbonate</td><td contenteditable="true">2%</td><td contenteditable="true">pH buffer</td></tr>
+          <tr><td contenteditable="true">Arrowroot powder</td><td contenteditable="true">1%</td><td contenteditable="true">Anti-caking</td></tr>
+          <tr><td contenteditable="true">Chamomile extract</td><td contenteditable="true">0.5%</td><td contenteditable="true">Soothing</td></tr>
+          <tr><td contenteditable="true">Drift EO blend (Lavender/Bergamot FCF/Eucalyptus/Roman chamomile)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Lavender 60% · Bergamot FCF 25% · Eucalyptus 10% · Roman chamomile 5%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-soak-drift-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+  <!-- BAR BARE -->
+  <div class="tab-pane" id="ftab-bar-bare">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Lipid + Milk Cleansing Bar — Bare</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-bar-bare">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin.</div>
+      <button class="inci-copy" onclick="copyEl('inci-bar-bare',this)">Copy</button>
+    </div>
+    <div class="callout c-warn" contenteditable="true">
+      <strong>Allergen statements required on label:</strong> Contains goat milk. Contains honey.
+    </div>
+    <div class="section-label">Formula — Oil Phase</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-bar-bare-pct">
+        <thead><tr><th onclick="sortTable('tbl-bar-bare-pct',0)">Ingredient</th><th onclick="sortTable('tbl-bar-bare-pct',1)">% of oil weight</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Tallow (grass-fed) → Sodium Tallowate</td><td contenteditable="true">45.7%</td><td contenteditable="true">Hard bar · rich lather · barrier lipids</td></tr>
+          <tr><td contenteditable="true">Olive oil pomace → Sodium Olivate</td><td contenteditable="true">28.6%</td><td contenteditable="true">Conditioning · classic soapmaking oil</td></tr>
+          <tr><td contenteditable="true">Coconut oil 76° refined → Sodium Cocoate</td><td contenteditable="true">11.4%</td><td contenteditable="true">Lather · cleansing</td></tr>
+          <tr><td contenteditable="true">Mango seed butter → (in Sodium Olivate/Tallowate)</td><td contenteditable="true">8.6%</td><td contenteditable="true">Conditioning · emollient</td></tr>
+          <tr><td contenteditable="true">Castor oil → Sodium Castorate</td><td contenteditable="true">5.7%</td><td contenteditable="true">Lather boost · conditioning</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="section-label">Process Notes</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">
+      Cold process. Superfat: 7%. Liquid: frozen goat milk at 38% of oil weight — freeze solid before adding lye.<br>
+      Additives: Colloidal oat 1 tsp per lb of oils · Raw honey 1 tsp per lb of oils (add at light trace).<br>
+      Cure: 42 days minimum. Lye: NaOH (sodium hydroxide) 100% pure. Use lye calculator before every batch.
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-bar-bare-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+  <!-- BAR SOLACE -->
+  <div class="tab-pane" id="ftab-bar-solace">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <h3>Lipid + Milk Cleansing Bar — Solace</h3>
+      <span class="p-locked">⚿ Locked</span>
+    </div>
+    <div class="section-label" style="margin-top:0">INCI String</div>
+    <div class="inci-wrap">
+      <div class="inci-block" contenteditable="true" id="inci-bar-solace">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin, Anthemis Nobilis Flower Extract, Vanilla Planifolia Fruit Extract, Santalum Album Oil.</div>
+      <button class="inci-copy" onclick="copyEl('inci-bar-solace',this)">Copy</button>
+    </div>
+    <div class="callout c-warn" contenteditable="true">
+      <strong>Allergen statements required on label:</strong> Contains goat milk. Contains honey.
+    </div>
+    <div class="section-label">Scent Profile</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
+      Roman chamomile CO2 · Vanilla oleoresin · Sandalwood<br>
+      EO blend at 0.5% of oil weight: Roman chamomile CO2 35% · Vanilla oleoresin 40% · Sandalwood 25%
+    </div>
+    <div class="section-label">Formula — Oil Phase (same base as Bare)</div>
+    <div class="tbl-wrap">
+      <table class="formula-tbl" id="tbl-bar-solace-pct">
+        <thead><tr><th onclick="sortTable('tbl-bar-solace-pct',0)">Ingredient</th><th onclick="sortTable('tbl-bar-solace-pct',1)">% of oil weight</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td contenteditable="true">Tallow (grass-fed) → Sodium Tallowate</td><td contenteditable="true">45.7%</td><td contenteditable="true">Hard bar · barrier lipids</td></tr>
+          <tr><td contenteditable="true">Olive oil pomace → Sodium Olivate</td><td contenteditable="true">28.6%</td><td contenteditable="true">Conditioning</td></tr>
+          <tr><td contenteditable="true">Coconut oil 76° refined → Sodium Cocoate</td><td contenteditable="true">11.4%</td><td contenteditable="true">Lather</td></tr>
+          <tr><td contenteditable="true">Mango seed butter</td><td contenteditable="true">8.6%</td><td contenteditable="true">Emollient</td></tr>
+          <tr><td contenteditable="true">Castor oil → Sodium Castorate</td><td contenteditable="true">5.7%</td><td contenteditable="true">Lather boost</td></tr>
+          <tr><td contenteditable="true">Solace EO blend (add at light trace)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Roman chamomile CO2 35% · Vanilla oleoresin 40% · Sandalwood 25%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="section-label">Process Notes</div>
+    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">
+      Same process as Bare. Add EO blend at light trace. Roman chamomile CO2 is thick — pre-warm slightly before blending. Cure: 42 days minimum.
+    </div>
+    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-bar-solace-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     PLACEHOLDER PAGES (all other sections)
+════════════════════════════════════════════════════════ -->
+
+<section id="pg-emailplatform" class="page">
+  <div class="page-title">Email Platform</div>
+  <div class="page-sub">Klaviyo setup, integration status, and flows</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">Includes: platform recommendation, setup checklist, integration status, notes.</p></div>
+</section>
+
+<section id="pg-formulacalc" class="page">
+  <div class="page-title">Formula Calculator</div>
+  <div class="page-sub">Calculate ingredient quantities for any batch size</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">Includes: dropdown product selector, batch size input, overage %, auto-calculated quantities table, cost per unit.</p></div>
+</section>
+
+<section id="pg-batchcalc" class="page">
+  <div class="page-title">Batch Calculator</div>
+  <div class="page-sub">Plan production runs, lot codes, soap cure tracking</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-labelcomp" class="page">
+  <div class="page-title">Labels &amp; Compliance</div>
+  <div class="page-sub">10-item label checklist, per-SKU status, QC sign-off</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-cogs" class="page">
+  <div class="page-title">COGS Sheet</div>
+  <div class="page-sub">Cost of goods, DTC margin, wholesale margin</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">OI-002 — margin targets must be set before this page is meaningful.</p></div>
+</section>
+
+<section id="pg-pricing" class="page">
+  <div class="page-title">Pricing &amp; Quantities</div>
+  <div class="page-sub">Launch inventory — on-hand, bundle allocation, sellable units</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-purchaselist" class="page">
+  <div class="page-title">Purchase List</div>
+  <div class="page-sub">Phased purchasing across all phases</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-production" class="page">
+  <div class="page-title">Production &amp; Batches</div>
+  <div class="page-sub">SOP status, batch log, production run tracker</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-suppliers" class="page">
+  <div class="page-title">Suppliers</div>
+  <div class="page-sub">Vendor directory, MOQ, lead times, COA status</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-inventory" class="page">
+  <div class="page-title">Inventory</div>
+  <div class="page-sub">Launch batch inventory — on-hand, allocated, sellable</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-labelpack" class="page">
+  <div class="page-title">Label &amp; Packaging</div>
+  <div class="page-sub">Packaging specs, label status, attachment area</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-shipping" class="page">
+  <div class="page-title">Shipping Calculator</div>
+  <div class="page-sub">Rate estimator, packed weights, free shipping threshold</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-launch" class="page">
+  <div class="page-title">Launch Planning</div>
+  <div class="page-sub">Phase timeline, checklist, hard blockers — internal only</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-contentcal" class="page">
+  <div class="page-title">Content Calendar</div>
+  <div class="page-sub">IG · TikTok · Pinterest — launch window and beyond</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-emailseq" class="page">
+  <div class="page-title">Email Sequences</div>
+  <div class="page-sub">Welcome, pre-launch, launch week, post-purchase, win-back</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-shopify" class="page">
+  <div class="page-title">Shopify Setup</div>
+  <div class="page-sub">oatearth.com — products, bundles, Klaviyo, inventory settings</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-wholesale" class="page">
+  <div class="page-title">Wholesale</div>
+  <div class="page-sub">Pricing, target accounts, onboarding, terms</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-openitems" class="page">
+  <div class="page-title">Open Items</div>
+  <div class="page-sub">Full issue log — see also Audit &amp; Conflicts</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-finance" class="page">
+  <div class="page-title">Finance</div>
+  <div class="page-sub">Revenue tracker, expense log, launch budget</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+<section id="pg-brand" class="page">
+  <div class="page-title">Brand &amp; Voice</div>
+  <div class="page-sub">Identity, tone rules, banned phrases, color palette, ritual</div>
+  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+'use strict';
+
+/* ──────────────────────────────────────────
+   STORAGE
+────────────────────────────────────────── */
+const SK = 'oe_os_v1';
+let saveTimer = null;
+
+function scheduleSave() {
+  const pill = document.getElementById('save-pill');
+  if (pill) { pill.textContent = 'Saving…'; pill.className = 'saving'; }
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(commitSave, 700);
+}
+
+function commitSave() {
+  try {
+    const out = {};
+    // contenteditable elements
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      const key = el.id ? 'ce::' + el.id : 'ce::idx::' + i;
+      out[key] = el.innerHTML;
+    });
+    // checkboxes
+    document.querySelectorAll('input[type=checkbox]').forEach((cb, i) => {
+      out['cb::' + i] = cb.checked;
+    });
+    localStorage.setItem(SK, JSON.stringify(out));
+    const pill = document.getElementById('save-pill');
+    if (pill) { pill.textContent = 'Saved ✓'; pill.className = 'saved'; }
+  } catch(e) {
+    const pill = document.getElementById('save-pill');
+    if (pill) { pill.textContent = 'Error'; }
+    console.error('Save error:', e);
+  }
+}
+
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(SK);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      const key = el.id ? 'ce::' + el.id : 'ce::idx::' + i;
+      if (data[key] !== undefined) el.innerHTML = data[key];
+    });
+    document.querySelectorAll('input[type=checkbox]').forEach((cb, i) => {
+      if (data['cb::' + i] !== undefined) {
+        cb.checked = data['cb::' + i];
+        const span = cb.nextElementSibling;
+        if (span && cb.checked) span.classList.add('done');
+      }
+    });
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+}
+
+// Wire autosave
+document.addEventListener('input', e => {
+  if (e.target.matches('[contenteditable], input, select, textarea')) scheduleSave();
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('input[type=checkbox], select')) scheduleSave();
+});
+
+/* ──────────────────────────────────────────
+   EXPORT / IMPORT
+────────────────────────────────────────── */
+function dlFile(name, content, mime) {
+  const b = new Blob([content], {type: mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function exportJSON() {
+  commitSave();
+  const raw = localStorage.getItem(SK) || '{}';
+  dlFile('oat_earth_os_' + today() + '.json', raw, 'application/json');
+}
+
+function exportHTML() {
+  commitSave();
+  const data = localStorage.getItem(SK) || '{}';
+  const src = document.documentElement.outerHTML;
+  const boot = `<script>(function(){try{localStorage.setItem(${JSON.stringify(SK)},${JSON.stringify(data)});}catch(e){}})();<\/script>`;
+  const out = src.replace('</body>', boot + '</body>');
+  dlFile('oat_earth_os_export_' + today() + '.html', out, 'text/html');
+}
+
+function importJSON() {
+  if (!confirm('Import will overwrite your current saved data. Continue?')) return;
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        JSON.parse(ev.target.result); // validate
+        localStorage.setItem(SK, ev.target.result);
+        loadSaved();
+        alert('Import successful.');
+      } catch { alert('Invalid JSON file.'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+/* ──────────────────────────────────────────
+   NAVIGATION
+────────────────────────────────────────── */
+function go(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Deactivate all nav items
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  // Show target
+  const pg = document.getElementById('pg-' + pageId);
+  if (pg) pg.classList.add('active');
+  // Highlight nav
+  const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function searchNav(q) {
+  const items = document.querySelectorAll('.nav-item');
+  if (!q.trim()) {
+    items.forEach(n => n.style.display = '');
+    return;
+  }
+  const lq = q.toLowerCase();
+  items.forEach(n => {
+    n.style.display = n.textContent.toLowerCase().includes(lq) ? '' : 'none';
+  });
+}
+
+/* ──────────────────────────────────────────
+   TABS
+────────────────────────────────────────── */
+function switchTab(rowId, prefix, paneId, btn) {
+  // Deactivate all buttons in this row
+  document.getElementById(rowId).querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Hide all panes with this prefix
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(prefix + paneId);
+  if (pane) pane.classList.add('active');
+}
+
+/* ──────────────────────────────────────────
+   TABLES — SORT / ADD / DELETE
+────────────────────────────────────────── */
+const _sortState = {};
+
+function sortTable(id, col) {
+  const t = document.getElementById(id);
+  if (!t) return;
+  const key = id + ':' + col;
+  const asc = _sortState[key] !== true;
+  _sortState[key] = asc;
+
+  // Update header classes
+  t.querySelectorAll('th').forEach((th, i) => {
+    th.classList.remove('sorted-asc','sorted-desc');
+    if (i === col) th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+  });
+
+  const tbody = t.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const ca = (a.cells[col]?.innerText || '').trim();
+    const cb = (b.cells[col]?.innerText || '').trim();
+    return asc ? ca.localeCompare(cb, undefined, {numeric:true}) : cb.localeCompare(ca, undefined, {numeric:true});
+  });
+  rows.forEach(r => tbody.appendChild(r));
+  scheduleSave();
+}
+
+function addRow(tableId, cells) {
+  const t = document.getElementById(tableId);
+  if (!t) return;
+  const tbody = t.querySelector('tbody');
+  const tr = document.createElement('tr');
+  cells.forEach(c => {
+    const td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.innerHTML = c;
+    tr.appendChild(td);
+  });
+  // Delete button cell
+  const tdDel = document.createElement('td');
+  tdDel.innerHTML = '<button class="btn btn-del" onclick="delRow(this)">✕</button>';
+  tr.appendChild(tdDel);
+  tbody.appendChild(tr);
+  scheduleSave();
+}
+
+function delRow(btn) {
+  const row = btn.closest('tr');
+  if (row) { row.remove(); scheduleSave(); }
+}
+
+/* ──────────────────────────────────────────
+   CHECKLIST
+────────────────────────────────────────── */
+function toggleDone(cb) {
+  const span = cb.nextElementSibling;
+  if (span) span.classList.toggle('done', cb.checked);
+  scheduleSave();
+}
+
+function addCheckItem(listId) {
+  const ul = document.getElementById(listId);
+  if (!ul) return;
+  const li = document.createElement('li');
+  li.innerHTML = '<input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">New item — edit me</span>';
+  ul.appendChild(li);
+  const span = li.querySelector('[contenteditable]');
+  if (span) {
+    span.focus();
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+  scheduleSave();
+}
+
+/* ──────────────────────────────────────────
+   INCI COPY
+────────────────────────────────────────── */
+function copyEl(elId, btn) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const text = el.innerText;
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = orig, 1800);
+    })
+    .catch(() => {
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand('copy');
+      sel.removeAllRanges();
+    });
+}
+
+/* ──────────────────────────────────────────
+   DASHBOARD INIT
+────────────────────────────────────────── */
+function initDash() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const h = now.getHours();
+  const greeting = h < 12 ? 'Good morning.' : h < 17 ? 'Good afternoon.' : 'Good evening.';
+  const greetEl = document.getElementById('dash-greeting');
+  if (greetEl) greetEl.textContent = greeting;
+  const dateEl = document.getElementById('dash-date');
+  if (dateEl) dateEl.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+  // Days to launch
+  const launch = new Date('2026-08-31T00:00:00');
+  const diff = Math.ceil((launch - now) / 86400000);
+  const dtl = document.getElementById('days-launch');
+  if (dtl) {
+    dtl.textContent = diff > 0 ? diff : (diff === 0 ? 'Today' : 'Launched');
+    if (diff < 0) dtl.style.color = 'var(--green)';
+    else if (diff < 30) dtl.style.color = 'var(--red)';
+  }
+}
+
+/* ──────────────────────────────────────────
+   INIT
+────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  initDash();
+  loadSaved();
+
+  // Re-init days to launch after loadSaved (in case it was overwritten)
+  const launch = new Date('2026-08-31T00:00:00');
+  const diff = Math.ceil((launch - new Date()) / 86400000);
+  const dtl = document.getElementById('days-launch');
+  if (dtl) {
+    dtl.textContent = diff > 0 ? diff : (diff === 0 ? 'Today' : 'Launched');
+  }
+
+  // Re-wire checkboxes from saved state
+  document.querySelectorAll('.checklist input[type=checkbox]').forEach(cb => {
+    if (cb.checked) {
+      const span = cb.nextElementSibling;
+      if (span) span.classList.add('done');
+    }
+  });
+});
+</script>
+</body>
+</html>
