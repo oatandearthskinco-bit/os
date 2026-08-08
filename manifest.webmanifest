@@ -1,0 +1,19 @@
+{
+  "name": "Ashley’s Life OS 11",
+  "short_name": "Life OS 11",
+  "description": "A phone-first ADHD-friendly life operating system for today, home, family, food, money, planning, and backup.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F5F0",
+  "theme_color": "#28231E",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
