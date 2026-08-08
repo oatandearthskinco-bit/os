@@ -13,40 +13,22 @@
 <link rel="apple-touch-icon" href="icon.svg">
 </head>
 <body>
-<div class="backup-nudge" id="backupNudge">
-  7+ days since your last backup.
-  <button onclick="doBackup()">Export now</button>
-  <button onclick="dimB()" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer">Later</button>
-</div>
-<header class="app-header">
-  <div class="header-inner">
-    <div class="brand"><h1>Ashley's Life OS</h1><p>OS 11 &middot; simple by design</p></div>
-    <div class="datebox"><div class="d" id="dateText"></div><div class="t" id="timeText"></div></div>
-  </div>
-</header>
+<header class="app-header"><div class="header-inner"><div class="brand"><h1>Ashley's Life OS</h1><p>OS 11 · simple by design</p></div><div class="datebox"><div class="d" id="dateText"></div><div class="t" id="timeText"></div></div></div></header>
 <nav class="tabs" id="tabs"></nav>
 <main>
-  <section id="dashboard" class="section active"></section>
-  <section id="calendar" class="section"></section>
-  <section id="tasks" class="section"></section>
-  <section id="brain" class="section"></section>
-  <section id="journal" class="section"></section>
-  <section id="cleaning" class="section"></section>
-  <section id="meals" class="section"></section>
-  <section id="lincoln" class="section"></section>
-  <section id="fitness" class="section"></section>
-  <section id="finances" class="section"></section>
-  <section id="business" class="section"></section>
-  <section id="more" class="section"></section>
+<section id="dashboard" class="section active"></section>
+<section id="calendar" class="section"></section>
+<section id="tasks" class="section"></section>
+<section id="cleaning" class="section"></section>
+<section id="meals" class="section"></section>
+<section id="lincoln" class="section"></section>
+<section id="finances" class="section"></section>
+<section id="more" class="section"></section>
 </main>
 <button class="fab" id="quickAdd" aria-label="Quick add" onclick="openQuickCapture()">+</button>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay" id="MO" onclick="cmo(event)"><div class="modal"><div class="modal-head"><div class="modal-title" id="MT"></div><button class="modal-close" onclick="cm()">Close</button></div><div id="MB"></div><div class="modal-actions" id="MA"></div></div></div>
-<script src="js/app-1.js"></script>
-<script src="js/app-2.js"></script>
-<script src="js/app-3.js"></script>
-<script src="js/app-4.js"></script>
-<script src="js/app-5.js"></script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(()=>{});});}</script>
+<script src="app.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}</script>
 </body>
 </html>
