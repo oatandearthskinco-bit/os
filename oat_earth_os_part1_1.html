@@ -1,1327 +1,784 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oat &amp; Earth — Operating System</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
-<style>
-/* ── TOKENS ── */
-:root {
-  --cream:   #F7F4EF;
-  --cream2:  #EFE9E0;
-  --cream3:  #E5DDD0;
-  --ink:     #1a1714;
-  --ink2:    #3d3830;
-  --ink3:    #6b6358;
-  --ink4:    #9e9488;
-  --gold:    #8a6c3e;
-  --gold2:   #b8924f;
-  --gold3:   #d4b07a;
-  --olive:   #6b7c5a;
-  --sage:    #8a9e7a;
-  --charcoal:#2a2520;
-  --red:     #8c3220;
-  --amber:   #7a5010;
-  --green:   #2a5e38;
-  --sidebar: 258px;
-  --hdr:     56px;
-  --border:  rgba(138,108,62,.14);
-  --border2: rgba(26,23,20,.07);
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oat &amp; Earth OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #F7F4EF; --cream2: #EFE9E0; --cream3: #E5DDD0;
+      --ink: #1a1714; --ink2: #3d3830; --ink3: #6b6358; --ink4: #9e9488;
+      --gold: #8a6c3e; --gold2: #b8924f; --gold3: #d4b07a;
+      --olive: #6b7c5a; --sage: #8a9e7a; --charcoal: #2a2520;
+      --red: #8c3220; --amber: #7a5010; --green: #2a5e38;
+      --sidebar: 260px; --hdr: 58px;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:'DM Sans',sans-serif; color:var(--ink2); background:var(--cream); }
+    [contenteditable="true"] { outline:none; border-radius:4px; transition:.15s; }
+    [contenteditable="true"]:hover { background: rgba(138,108,62,.08); }
+    [contenteditable="true"]:focus { box-shadow:0 0 0 2px rgba(138,108,62,.35); background: rgba(138,108,62,.11); }
 
-/* ── RESET ── */
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--cream);color:var(--ink2);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
-a{color:var(--gold);text-decoration:none}
-button{font-family:'DM Sans',sans-serif;cursor:pointer}
+    .app { display:flex; min-height:100vh; }
+    aside { width:var(--sidebar); background:var(--ink); color:var(--cream2); position:fixed; left:0; top:0; bottom:0; overflow:auto; border-right:1px solid rgba(212,176,122,.24); }
+    .brand { height:var(--hdr); display:flex; align-items:center; padding:0 16px; border-bottom:1px solid rgba(212,176,122,.2); font-family:'Playfair Display',serif; font-style:italic; color:var(--gold3); }
+    .nav-controls { padding:10px 14px; border-bottom:1px solid rgba(212,176,122,.14); }
+    .btn { border:1px solid rgba(138,108,62,.45); background:rgba(138,108,62,.15); color:var(--cream2); padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer; }
+    .btn:hover { background:rgba(138,108,62,.24); }
+    .nav-group { padding:8px 0; }
+    .nav-group h4 { padding:10px 16px 6px; margin:0; font-size:10px; letter-spacing:.14em; color:var(--ink4); text-transform:uppercase; }
+    .nav-item { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 16px 8px 14px; border-left:3px solid transparent; cursor:pointer; color:#e4dccf; font-size:13px; }
+    .nav-item:hover { background:rgba(138,108,62,.1); }
+    .nav-item.active { border-left-color:var(--gold2); background:rgba(138,108,62,.18); }
+    .nav-delete,.item-delete,.group-delete,.row-del { display:none; color:#f2b7ab; cursor:pointer; font-size:11px; }
+    .edit-nav .nav-delete,.edit-nav .group-delete { display:inline; }
 
-/* ── CONTENTEDITABLE ── */
-[contenteditable]{outline:none;border-radius:2px;transition:background .15s,box-shadow .15s;cursor:text}
-[contenteditable]:hover{background:rgba(138,108,62,.07)}
-[contenteditable]:focus{background:rgba(138,108,62,.11);box-shadow:0 0 0 1.5px rgba(138,108,62,.32)}
+    main { margin-left:var(--sidebar); width:calc(100% - var(--sidebar)); }
+    header { height:var(--hdr); background:var(--charcoal); color:var(--cream2); display:flex; align-items:center; gap:8px; padding:0 18px; position:sticky; top:0; z-index:40; border-bottom:1px solid rgba(212,176,122,.2); }
+    header input { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:var(--cream2); border-radius:4px; padding:7px 10px; width:240px; }
+    .save-pill { margin-left:auto; font-size:12px; border:1px solid rgba(212,176,122,.45); background:rgba(138,108,62,.22); color:var(--gold3); border-radius:999px; padding:4px 10px; }
 
-/* ── HEADER ── */
-#hdr {
-  position:fixed;top:0;left:0;right:0;height:var(--hdr);
-  background:var(--charcoal);
-  display:flex;align-items:center;
-  padding:0 18px 0 calc(var(--sidebar) + 20px);
-  gap:10px;z-index:200;
-  border-bottom:1px solid rgba(138,108,62,.18);
-}
-#hdr-brand{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--cream2);letter-spacing:.02em;flex:1;white-space:nowrap}
-#hdr-search{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:5px 11px;color:var(--cream2);font-size:12px;width:180px;outline:none;font-family:'DM Sans',sans-serif}
-#hdr-search::placeholder{color:rgba(239,233,224,.35)}
-#hdr-search:focus{border-color:rgba(138,108,62,.5);background:rgba(255,255,255,.1)}
-.hdr-btn{background:rgba(138,108,62,.18);border:1px solid rgba(138,108,62,.32);color:var(--gold3);padding:4px 11px;border-radius:3px;font-size:11px;font-weight:500;letter-spacing:.02em;transition:background .15s;white-space:nowrap}
-.hdr-btn:hover{background:rgba(138,108,62,.32)}
-#save-pill{font-size:11px;padding:3px 10px;background:rgba(138,108,62,.14);border-radius:20px;color:var(--gold3);white-space:nowrap;transition:color .25s}
-#save-pill.saving{color:var(--gold2)}
-#save-pill.saved{color:#72c47a}
+    .page { display:none; max-width:1080px; margin:0 auto; padding:44px 52px 92px; animation:fadeUp .25s ease; }
+    .page.active { display:block; }
+    @keyframes fadeUp { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
-/* ── SIDEBAR ── */
-#sidebar {
-  position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;
-  background:var(--charcoal);overflow-y:auto;z-index:100;
-  padding-top:var(--hdr);
-  border-right:1px solid rgba(138,108,62,.12);
-}
-#sidebar::-webkit-scrollbar{width:3px}
-#sidebar::-webkit-scrollbar-thumb{background:rgba(138,108,62,.25);border-radius:2px}
-.nav-group{padding:16px 0 4px}
-.nav-group-label{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:rgba(158,148,136,.55);padding:0 18px 6px;font-weight:500}
-.nav-item{display:flex;align-items:center;gap:7px;padding:7px 18px 7px 15px;font-size:12.5px;color:rgba(239,233,224,.58);cursor:pointer;transition:color .15s,background .15s;border-left:2.5px solid transparent;user-select:none}
-.nav-item:hover{color:var(--cream2);background:rgba(138,108,62,.08)}
-.nav-item.active{color:var(--cream);border-left-color:var(--gold);background:rgba(138,108,62,.14);font-weight:500}
-.nav-icon{font-size:9px;opacity:.6;flex-shrink:0}
+    h1,h2,h3 { font-family:'Playfair Display',serif; color:var(--ink); margin:0 0 12px; }
+    h1 { font-size:36px; font-style:italic; font-weight:400; }
+    h2 { font-size:25px; font-weight:400; }
+    h3 { font-size:20px; font-weight:400; }
+    p,li,small,label,th,td,button,span,div,input,select,textarea { font-family:'DM Sans',sans-serif; }
+    .muted { color:var(--ink4); }
+    .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .card { background:var(--cream2); border:1px solid rgba(61,56,48,.12); border-radius:8px; padding:14px; }
+    .danger { border-left:4px solid var(--red); background:#f9ece9; color:var(--red); padding:10px 12px; border-radius:6px; }
+    .warn { border-left:4px solid var(--amber); background:#f7f1e7; color:var(--amber); padding:10px 12px; border-radius:6px; }
+    .good { border-left:4px solid var(--green); background:#edf4ef; color:var(--green); padding:10px 12px; border-radius:6px; }
 
-/* ── CONTENT AREA ── */
-#content{margin-left:var(--sidebar);margin-top:var(--hdr);padding:42px 52px 60px;min-height:calc(100vh - var(--hdr))}
-.page{display:none;animation:fadeUp .22s ease}
-.page.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+    table { width:100%; border-collapse:collapse; background:white; }
+    th,td { border:1px solid rgba(61,56,48,.12); padding:8px; vertical-align:top; }
+    th { background:var(--cream2); font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+    .toolbar,.table-tools,.list-tools,.bottom-tools { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 12px; }
+    .tiny { font-size:11px; padding:5px 8px; }
+    .pill { display:inline-block; font-size:11px; padding:3px 8px; border-radius:999px; }
+    .pill-red{ background:#f2d5cf; color:var(--red); }
+    .pill-amber{ background:#f1e5cf; color:var(--amber); }
+    .pill-green{ background:#d8eadb; color:var(--green); }
+    .stock-red { background:rgba(140,50,32,.11); color:var(--red); font-weight:700; }
+    .stock-amber { background:rgba(122,80,16,.11); color:var(--amber); font-weight:700; }
+    .stock-green { background:rgba(42,94,56,.11); color:var(--green); font-weight:700; }
+    .section { margin-bottom:28px; }
 
-/* ── PAGE TYPOGRAPHY ── */
-.page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--ink);margin-bottom:5px;line-height:1.25}
-.page-title em{font-style:italic}
-.page-sub{font-size:12.5px;color:var(--ink4);margin-bottom:30px;letter-spacing:.01em}
-.section-label{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink4);font-weight:500;margin:28px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--border2)}
-.section-label:first-of-type{margin-top:0}
-h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:400;color:var(--ink);margin-bottom:8px}
+    .collapsible > summary { cursor:pointer; font-family:'Playfair Display',serif; font-size:20px; color:var(--ink); margin-bottom:10px; }
 
-/* ── CARDS ── */
-.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:24px}
-.card{background:var(--cream2);border:1px solid var(--border);border-radius:5px;padding:17px 19px}
-.card-lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-bottom:5px;font-weight:500}
-.card-val{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);font-weight:500;line-height:1.2}
-.card-note{font-size:11px;color:var(--ink4);margin-top:3px}
+    .attachment-wrap { border:1px solid rgba(61,56,48,.15); border-radius:8px; background:var(--cream2); overflow:hidden; }
+    .attachment-head { padding:8px 10px; background:var(--cream3); display:flex; justify-content:space-between; align-items:center; }
+    .attachment-body { padding:10px; display:none; }
+    .attachment-wrap.open .attachment-body{ display:block; }
+    .attach-item { border:1px solid rgba(61,56,48,.2); background:#fff; border-radius:6px; padding:8px; margin:8px 0; }
+    .attach-item img { max-width:220px; display:block; margin-bottom:6px; }
 
-/* ── CALLOUTS ── */
-.callout{border-radius:4px;padding:13px 17px;margin:14px 0;font-size:13px;line-height:1.65;border-left:3px solid}
-.c-danger{background:rgba(140,50,32,.06);border-color:var(--red);color:var(--red)}
-.c-warn  {background:rgba(122,80,16,.06);border-color:var(--amber);color:var(--amber)}
-.c-info  {background:rgba(138,108,62,.07);border-color:var(--gold);color:var(--ink3)}
-.c-ok    {background:rgba(42,94,56,.06);border-color:var(--green);color:var(--green)}
-.callout strong{font-weight:500}
+    .bottom-tools { position:sticky; bottom:0; background:rgba(247,244,239,.96); border-top:1px solid rgba(61,56,48,.15); padding:10px 0; backdrop-filter: blur(3px); }
+    footer { padding:20px; text-align:center; color:var(--ink4); border-top:1px solid rgba(61,56,48,.1); }
 
-/* ── TABLES ── */
-.tbl-wrap{overflow-x:auto;margin:10px 0}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);padding:7px 11px;text-align:left;border-bottom:1px solid var(--border2);background:var(--cream2);white-space:nowrap;cursor:pointer;user-select:none}
-th:hover{color:var(--gold)}
-th.sorted-asc::after{content:' ↑';font-size:9px}
-th.sorted-desc::after{content:' ↓';font-size:9px}
-td{padding:8px 11px;border-bottom:1px solid var(--border2);vertical-align:top;line-height:1.5}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(138,108,62,.03)}
-.tbl-actions{display:flex;gap:7px;margin-top:7px}
-
-/* ── BUTTONS ── */
-.btn{background:none;border:1px solid var(--border);color:var(--ink3);padding:4px 10px;border-radius:3px;font-size:11px;font-weight:400;transition:all .15s}
-.btn:hover{border-color:var(--gold);color:var(--gold)}
-.btn-del{color:var(--red);border-color:rgba(140,50,32,.18)}
-.btn-del:hover{border-color:var(--red);background:rgba(140,50,32,.04)}
-.btn-primary{background:var(--gold);border-color:var(--gold);color:var(--cream);padding:6px 16px;font-size:12px}
-.btn-primary:hover{background:var(--gold2);border-color:var(--gold2)}
-
-/* ── PILLS ── */
-.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:.03em;white-space:nowrap}
-.p-red   {background:rgba(140,50,32,.1);color:var(--red)}
-.p-amber {background:rgba(122,80,16,.1);color:var(--amber)}
-.p-green {background:rgba(42,94,56,.1);color:var(--green)}
-.p-gold  {background:rgba(138,108,62,.12);color:var(--gold)}
-.p-gray  {background:rgba(107,99,88,.1);color:var(--ink3)}
-.p-locked{background:rgba(42,94,56,.09);color:var(--green);display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
-
-/* ── CHECKLIST ── */
-.checklist{list-style:none;margin:6px 0}
-.checklist li{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:13px}
-.checklist li:last-child{border-bottom:none}
-.checklist input[type=checkbox]{margin-top:3px;accent-color:var(--gold);width:13px;height:13px;flex-shrink:0}
-.item-text{flex:1}
-.item-text.done{text-decoration:line-through;color:var(--ink4)}
-
-/* ── TABS ── */
-.tab-row{display:flex;border-bottom:1px solid var(--border2);margin-bottom:18px;flex-wrap:wrap;gap:0}
-.tab-btn{padding:8px 15px;font-size:12px;cursor:pointer;border:none;background:none;color:var(--ink4);border-bottom:2px solid transparent;transition:color .15s;font-family:'DM Sans',sans-serif;margin-bottom:-1px;white-space:nowrap}
-.tab-btn:hover{color:var(--ink2)}
-.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:500}
-.tab-pane{display:none}
-.tab-pane.active{display:block}
-
-/* ── INCI BLOCK ── */
-.inci-wrap{position:relative;margin:8px 0}
-.inci-block{background:var(--cream2);border:1px solid var(--border);border-radius:4px;padding:13px 44px 13px 14px;font-size:12px;line-height:1.85;color:var(--ink3)}
-.inci-copy{position:absolute;top:8px;right:8px;background:none;border:1px solid var(--border);color:var(--ink4);padding:2px 8px;border-radius:2px;font-size:10px;transition:all .15s}
-.inci-copy:hover{border-color:var(--gold);color:var(--gold)}
-
-/* ── FORMULA TABLE ── */
-.formula-tbl td:nth-child(2){font-variant-numeric:tabular-nums;text-align:right;width:60px}
-.formula-tbl td:nth-child(3){width:60px;text-align:right;font-variant-numeric:tabular-nums}
-
-/* ── PLACEHOLDER PAGE ── */
-.placeholder-page{display:flex;flex-direction:column;align-items:flex-start;padding:48px 0;gap:10px}
-.placeholder-page .coming{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--ink4)}
-
-/* ── MISC ── */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-hr.div{border:none;border-top:1px solid var(--border2);margin:22px 0}
-.num-red{color:var(--red);font-weight:500}
-.num-amber{color:var(--amber);font-weight:500}
-.num-green{color:var(--green)}
-
-/* ── RESPONSIVE ── */
-@media(max-width:860px){
-  :root{--sidebar:0px}
-  #sidebar{transform:translateX(-258px);width:258px;transition:transform .25s}
-  #sidebar.open{transform:translateX(0)}
-  #content{padding:22px 18px 50px}
-  .card-grid{grid-template-columns:1fr 1fr}
-  .two-col,.three-col{grid-template-columns:1fr}
-}
-@media print{#hdr,#sidebar{display:none}#content{margin:0;padding:20px}}
-</style>
+    @media (max-width:980px){
+      :root{ --sidebar: 225px; }
+      .page{ padding:26px 18px 88px; }
+      .grid-3{ grid-template-columns:1fr; }
+      .grid-2{ grid-template-columns:1fr; }
+      header input{ width:140px; }
+    }
+    @media print{
+      aside,header,.bottom-tools,.table-tools,.list-tools,.attachment-head button,.nav-controls{ display:none !important; }
+      main{ margin:0; width:100%; }
+      .page{ display:block !important; page-break-after:always; }
+      body{ background:#fff; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- ═══════════════════════ HEADER ═══════════════════════ -->
-<header id="hdr">
-  <div id="hdr-brand">Oat &amp; Earth — OS</div>
-  <input id="hdr-search" type="text" placeholder="Search pages…" oninput="searchNav(this.value)">
-  <span id="save-pill">Saved ✓</span>
-  <button class="hdr-btn" onclick="exportJSON()">Export JSON</button>
-  <button class="hdr-btn" onclick="exportHTML()">Export HTML</button>
-  <button class="hdr-btn" onclick="importJSON()">Import JSON</button>
-</header>
-
-<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
-<nav id="sidebar">
-  <div class="nav-group">
-    <div class="nav-group-label">Command</div>
-    <div class="nav-item active" data-page="dashboard"    onclick="go('dashboard')">   <span class="nav-icon">◈</span>Dashboard</div>
-    <div class="nav-item"        data-page="audit"        onclick="go('audit')">        <span class="nav-icon">⊛</span>Audit &amp; Conflicts</div>
-    <div class="nav-item"        data-page="emailplatform" onclick="go('emailplatform')"><span class="nav-icon">◉</span>Email Platform</div>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Products &amp; Formulas</div>
-    <div class="nav-item" data-page="skumaster"     onclick="go('skumaster')">    <span class="nav-icon">▪</span>SKU Master</div>
-    <div class="nav-item" data-page="formulas"      onclick="go('formulas')">     <span class="nav-icon">▪</span>Formulas &amp; INCI</div>
-    <div class="nav-item" data-page="formulacalc"   onclick="go('formulacalc')">  <span class="nav-icon">▪</span>Formula Calculator</div>
-    <div class="nav-item" data-page="batchcalc"     onclick="go('batchcalc')">    <span class="nav-icon">▪</span>Batch Calculator</div>
-    <div class="nav-item" data-page="labelcomp"     onclick="go('labelcomp')">    <span class="nav-icon">▪</span>Labels &amp; Compliance</div>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Operations</div>
-    <div class="nav-item" data-page="cogs"          onclick="go('cogs')">         <span class="nav-icon">▪</span>COGS Sheet</div>
-    <div class="nav-item" data-page="pricing"       onclick="go('pricing')">      <span class="nav-icon">▪</span>Pricing &amp; Quantities</div>
-    <div class="nav-item" data-page="purchaselist"  onclick="go('purchaselist')"> <span class="nav-icon">▪</span>Purchase List</div>
-    <div class="nav-item" data-page="production"    onclick="go('production')">   <span class="nav-icon">▪</span>Production &amp; Batches</div>
-    <div class="nav-item" data-page="suppliers"     onclick="go('suppliers')">    <span class="nav-icon">▪</span>Suppliers</div>
-    <div class="nav-item" data-page="inventory"     onclick="go('inventory')">    <span class="nav-icon">▪</span>Inventory</div>
-    <div class="nav-item" data-page="labelpack"     onclick="go('labelpack')">    <span class="nav-icon">▪</span>Label &amp; Packaging</div>
-    <div class="nav-item" data-page="shipping"      onclick="go('shipping')">     <span class="nav-icon">▪</span>Shipping Calculator</div>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Growth</div>
-    <div class="nav-item" data-page="launch"        onclick="go('launch')">       <span class="nav-icon">▪</span>Launch Planning</div>
-    <div class="nav-item" data-page="contentcal"    onclick="go('contentcal')">   <span class="nav-icon">▪</span>Content Calendar</div>
-    <div class="nav-item" data-page="emailseq"      onclick="go('emailseq')">     <span class="nav-icon">▪</span>Email Sequences</div>
-    <div class="nav-item" data-page="shopify"       onclick="go('shopify')">      <span class="nav-icon">▪</span>Shopify Setup</div>
-    <div class="nav-item" data-page="wholesale"     onclick="go('wholesale')">    <span class="nav-icon">▪</span>Wholesale</div>
-  </div>
-  <div class="nav-group">
-    <div class="nav-group-label">Admin</div>
-    <div class="nav-item" data-page="openitems"     onclick="go('openitems')">    <span class="nav-icon">▪</span>Open Items</div>
-    <div class="nav-item" data-page="finance"       onclick="go('finance')">      <span class="nav-icon">▪</span>Finance</div>
-    <div class="nav-item" data-page="brand"         onclick="go('brand')">        <span class="nav-icon">▪</span>Brand &amp; Voice</div>
-  </div>
-</nav>
-
-<!-- ═══════════════════════ CONTENT ═══════════════════════ -->
-<main id="content">
-
-<!-- ════════════════════════════════════════════════════════
-     DASHBOARD
-════════════════════════════════════════════════════════ -->
-<section id="pg-dashboard" class="page active">
-  <div class="page-title"><em id="dash-greeting">Good morning.</em></div>
-  <div class="page-sub" id="dash-date"></div>
-
-  <div class="card-grid">
-    <div class="card">
-      <div class="card-lbl">Launch Date</div>
-      <div class="card-val" style="font-size:15px;margin-top:3px" contenteditable="true">August 31, 2026</div>
-      <div class="card-note" style="color:var(--red);font-size:10px;letter-spacing:.04em;text-transform:uppercase;margin-top:4px">Internal only — never share publicly</div>
+<div class="app" id="app">
+  <aside id="sidebar">
+    <div class="brand" contenteditable="true">Oat &amp; Earth OS · Internal Use Only</div>
+    <div class="nav-controls">
+      <button class="btn tiny" id="toggleNavEdit" contenteditable="true">✏ Edit Nav</button>
+      <button class="btn tiny" id="addNavGroup" contenteditable="true">+ Add Group</button>
     </div>
-    <div class="card">
-      <div class="card-lbl">Days to Launch</div>
-      <div class="card-val" id="days-launch">—</div>
-      <div class="card-note">auto-calculated</div>
-    </div>
-    <div class="card">
-      <div class="card-lbl">Active SKUs</div>
-      <div class="card-val">8</div>
-      <div class="card-note">+ 6 bundles</div>
-    </div>
-    <div class="card">
-      <div class="card-lbl">Open Items</div>
-      <div class="card-val" style="color:var(--red)" contenteditable="true">3</div>
-      <div class="card-note" contenteditable="true">2 blocking</div>
-    </div>
-    <div class="card">
-      <div class="card-lbl">Brand Readiness</div>
-      <div class="card-val" contenteditable="true">85%</div>
-      <div class="card-note" contenteditable="true">formulas locked · labels pending</div>
-    </div>
-    <div class="card">
-      <div class="card-lbl">Production Space</div>
-      <div class="card-val" contenteditable="true">0%</div>
-      <div class="card-note" contenteditable="true">garage studio — setup pending</div>
-    </div>
-  </div>
+    <div id="nav"></div>
+  </aside>
+  <main>
+    <header>
+      <input id="search" placeholder="Search pages / content" contenteditable="true" />
+      <button class="btn tiny" id="exportJSON" contenteditable="true">Export JSON</button>
+      <button class="btn tiny" id="exportHTML" contenteditable="true">Export HTML</button>
+      <button class="btn tiny" id="importJSONBtn" contenteditable="true">Import JSON</button>
+      <button class="btn tiny" id="importHTMLBtn" contenteditable="true">Import HTML</button>
+      <input type="file" id="importJSONInput" accept="application/json" style="display:none" />
+      <input type="file" id="importHTMLInput" accept="text/html" style="display:none" />
+      <span class="save-pill" id="savePill" contenteditable="true">Saved ✓</span>
+    </header>
 
-  <div class="callout c-danger">
-    <strong>Hard Blockers</strong><br>
-    <span contenteditable="true">
-      OI-001: MOQ conflict ($200 vs $250) — confirm tallow supplier MOQ in writing before ordering.<br>
-      OI-003: Crème 4oz only 3 sellable singles — reduce bundle caps or produce another batch before launch.
-    </span>
-  </div>
+    <section class="page active" id="dashboard" data-page="dashboard">
+      <h1 contenteditable="true">Good morning.</h1>
+      <p class="muted" contenteditable="true">Today is <span id="todayDate" contenteditable="true"></span>. This workspace is internal only.</p>
+      <div class="grid-3 section">
+        <div class="card"><div contenteditable="true">Launch Date</div><h3 contenteditable="true">August 31, 2026</h3></div>
+        <div class="card"><div contenteditable="true">Days to Launch</div><h3 id="daysToLaunch" contenteditable="true">—</h3></div>
+        <div class="card"><div contenteditable="true">Active SKUs</div><h3 contenteditable="true">8</h3></div>
+        <div class="card"><div contenteditable="true">Open Items</div><h3 contenteditable="true">4 (2 blocking)</h3></div>
+        <div class="card"><div contenteditable="true">Brand Readiness</div><h3 contenteditable="true">85%</h3></div>
+        <div class="card"><div contenteditable="true">Production Space</div><h3 contenteditable="true">0%</h3></div>
+      </div>
+      <div class="section card">
+        <h3 contenteditable="true">This Week's Priorities</h3>
+        <ul class="editable-list" data-list="priorities">
+          <li contenteditable="true">QC sign-off on all label designs <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Resolve MOQ conflict — confirm tallow supplier MOQ in writing (OI-001) <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Collect COAs from all ingredient suppliers <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Set margin targets (DTC + wholesale) — OI-002 <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Finalize bundle caps vs sellable singles — OI-003 <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Schedule first full production run (all Wave 1 SKUs) <span class="item-delete">✕</span></li>
+          <li contenteditable="true">Build Klaviyo welcome flow + launch countdown <span class="item-delete">✕</span></li>
+        </ul>
+        <div class="list-tools"><button class="btn tiny add-list-item" data-target="priorities" contenteditable="true">+ Add Item</button></div>
+      </div>
+      <div class="section card">
+        <h3 contenteditable="true">Quick Nav</h3>
+        <table class="sortable editable-table" data-table="quick-nav">
+          <thead><tr><th contenteditable="true">Page</th><th contenteditable="true">Purpose</th><th contenteditable="true">Action</th><th contenteditable="true">Remove</th></tr></thead>
+          <tbody>
+            <tr draggable="true"><td contenteditable="true">COGS Sheet</td><td contenteditable="true">Check margin health</td><td contenteditable="true">Review red rows</td><td class="row-del">✕</td></tr>
+            <tr draggable="true"><td contenteditable="true">Pricing &amp; Quantities</td><td contenteditable="true">Launch stock guardrails</td><td contenteditable="true">Watch low sellable counts</td><td class="row-del">✕</td></tr>
+            <tr draggable="true"><td contenteditable="true">Content Calendar</td><td contenteditable="true">Launch cadence</td><td contenteditable="true">Schedule launch week posts</td><td class="row-del">✕</td></tr>
+          </tbody>
+        </table>
+        <div class="table-tools">
+          <button class="btn tiny add-row" data-table="quick-nav" contenteditable="true">+ Add Row</button>
+          <button class="btn tiny add-col" data-table="quick-nav" contenteditable="true">+ Add Column</button>
+        </div>
+      </div>
+      <div class="danger" contenteditable="true">Hard Blockers: OI-001 MOQ conflict ($200 vs $250) unresolved. Crème 4oz only 3 sellable singles remain.</div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="section-label">This Week's Priorities</div>
-  <ul class="checklist" id="dash-priorities">
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">QC sign-off on all label designs</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Resolve MOQ conflict — confirm tallow supplier MOQ in writing (OI-001)</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Collect COAs from all ingredient suppliers before first batch</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Set margin targets — DTC + wholesale (OI-002)</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Finalize bundle caps vs. sellable singles — OI-003</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Schedule first full production run (all Wave 1 SKUs)</span></li>
-    <li><input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">Build Klaviyo welcome flow + launch countdown</span></li>
-  </ul>
-  <div class="tbl-actions">
-    <button class="btn" onclick="addCheckItem('dash-priorities')">+ Add Priority</button>
-  </div>
-
-  <div class="section-label" style="margin-top:28px">Quick Navigation</div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>Page</th><th>Purpose</th><th>Status</th></tr></thead>
+    <section class="page" id="audit" data-page="audit"><h2 contenteditable="true">Audit &amp; Conflicts</h2>
+      <table class="sortable editable-table" data-table="audit-items"><thead><tr><th>ID</th><th>Severity</th><th>Title</th><th>Description</th><th>Decision Needed</th><th>Owner</th><th>Due Date</th><th>Status</th><th>Remove</th></tr></thead>
       <tbody>
-        <tr><td><a href="#" onclick="go('audit');return false">Audit &amp; Conflicts</a></td><td contenteditable="true">Open items + blockers</td><td><span class="pill p-red">3 open</span></td></tr>
-        <tr><td><a href="#" onclick="go('skumaster');return false">SKU Master</a></td><td contenteditable="true">All 8 singles + 6 bundles</td><td><span class="pill p-green">Current</span></td></tr>
-        <tr><td><a href="#" onclick="go('formulas');return false">Formulas &amp; INCI</a></td><td contenteditable="true">Locked INCI strings, all 7 products</td><td><span class="pill p-green">Locked</span></td></tr>
-        <tr><td><a href="#" onclick="go('purchaselist');return false">Purchase List</a></td><td contenteditable="true">Phased purchasing — all phases</td><td><span class="pill p-amber">In progress</span></td></tr>
-        <tr><td><a href="#" onclick="go('launch');return false">Launch Planning</a></td><td contenteditable="true">Phase timeline + hard blockers</td><td><span class="pill p-amber">Active</span></td></tr>
-        <tr><td><a href="#" onclick="go('contentcal');return false">Content Calendar</a></td><td contenteditable="true">IG · TikTok · Pinterest</td><td><span class="pill p-gold">Draft</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+        <tr draggable="true"><td contenteditable="true">OI-001</td><td><span class="pill pill-red" contenteditable="true">CRITICAL</span></td><td contenteditable="true">MOQ conflict — tallow supplier</td><td contenteditable="true">$200 vs $250 conflicting docs</td><td contenteditable="true">Confirm in writing before ordering</td><td contenteditable="true">Ashley</td><td contenteditable="true">2026-05-15</td><td contenteditable="true">Critical</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OI-002</td><td><span class="pill pill-amber" contenteditable="true">ACTIVE</span></td><td contenteditable="true">Margin targets not set</td><td contenteditable="true">Finalize DTC/wholesale targets</td><td contenteditable="true">Set DTC 65% / wholesale 45%</td><td contenteditable="true">Ashley</td><td contenteditable="true">2026-05-22</td><td contenteditable="true">Active</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OI-003</td><td><span class="pill pill-amber" contenteditable="true">ACTIVE</span></td><td contenteditable="true">Bundle cap pressure</td><td contenteditable="true">Crème 4oz singles constrained</td><td contenteditable="true">Adjust bundle caps or produce more</td><td contenteditable="true">Ashley</td><td contenteditable="true">2026-05-22</td><td contenteditable="true">Active</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="audit-items" contenteditable="true">+ Add Open Item</button><button class="btn tiny add-col" data-table="audit-items" contenteditable="true">+ Add Column</button></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<!-- ════════════════════════════════════════════════════════
-     AUDIT & CONFLICTS
-════════════════════════════════════════════════════════ -->
-<section id="pg-audit" class="page">
-  <div class="page-title">Audit &amp; Conflicts</div>
-  <div class="page-sub">Open items, blockers, and decisions needed</div>
+    <section class="page" id="email-platform" data-page="email-platform"><h2 contenteditable="true">Email Platform</h2>
+      <p contenteditable="true">Platform recommendation: <strong>Klaviyo</strong></p>
+      <div class="grid-2">
+        <div class="card"><h3 contenteditable="true">Setup Checklist</h3><ul class="editable-list" data-list="email-setup">
+          <li contenteditable="true">Create Klaviyo account <span class="item-delete">✕</span></li><li contenteditable="true">Install Shopify integration <span class="item-delete">✕</span></li><li contenteditable="true">Configure list growth forms <span class="item-delete">✕</span></li><li contenteditable="true">Enable welcome flow <span class="item-delete">✕</span></li><li contenteditable="true">Create launch week campaign calendar <span class="item-delete">✕</span></li><li contenteditable="true">Set sender domain authentication <span class="item-delete">✕</span></li><li contenteditable="true">Seed test segment <span class="item-delete">✕</span></li><li contenteditable="true">Add FOUNDERS15 conditional block <span class="item-delete">✕</span></li><li contenteditable="true">Create post-purchase flow <span class="item-delete">✕</span></li><li contenteditable="true">Create win-back flow <span class="item-delete">✕</span></li>
+        </ul><div class="list-tools"><button class="btn tiny add-list-item" data-target="email-setup" contenteditable="true">+ Add Item</button></div></div>
+        <div class="card"><h3 contenteditable="true">Integration Status</h3><table class="sortable editable-table" data-table="email-integration"><thead><tr><th>System</th><th>Status</th><th>Notes</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">Shopify</td><td contenteditable="true">Not connected</td><td contenteditable="true">Pending plan reactivation</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">Signup Form</td><td contenteditable="true">Draft</td><td contenteditable="true">Need embed on oatearth.com/join</td><td class="row-del">✕</td></tr></tbody></table><div class="table-tools"><button class="btn tiny add-row" data-table="email-integration" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="email-integration" contenteditable="true">+ Add Column</button></div></div>
+      </div>
+      <div class="section" data-attach="email-platform"></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="tbl-wrap">
-    <table id="tbl-oi">
-      <thead>
-        <tr>
-          <th onclick="sortTable('tbl-oi',0)">ID</th>
-          <th onclick="sortTable('tbl-oi',1)">Severity</th>
-          <th onclick="sortTable('tbl-oi',2)">Title</th>
-          <th onclick="sortTable('tbl-oi',3)">Description</th>
-          <th onclick="sortTable('tbl-oi',4)">Decision Needed</th>
-          <th onclick="sortTable('tbl-oi',5)">Owner</th>
-          <th onclick="sortTable('tbl-oi',6)">Due</th>
-          <th onclick="sortTable('tbl-oi',7)">Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td contenteditable="true">OI-001</td>
-          <td><span class="pill p-red" contenteditable="true">Critical</span></td>
-          <td contenteditable="true">MOQ conflict — tallow supplier</td>
-          <td contenteditable="true">Two conflicting documents show $200 vs $250 MOQ for the tallow supplier. Cannot place order until resolved.</td>
-          <td contenteditable="true">Email supplier directly and request written confirmation of true MOQ before placing any order.</td>
-          <td contenteditable="true">Ashley</td>
-          <td contenteditable="true">ASAP</td>
-          <td><span class="pill p-red" contenteditable="true">Open</span></td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OI-002</td>
-          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
-          <td contenteditable="true">Margin targets not set</td>
-          <td contenteditable="true">DTC and wholesale margin targets have not been formally defined. COGS sheet can't be evaluated without them.</td>
-          <td contenteditable="true">Set DTC target (suggest 65%) and wholesale target (suggest 45%). Confirm in writing before finalizing pricing.</td>
-          <td contenteditable="true">Ashley</td>
-          <td contenteditable="true">Before pricing finalization</td>
-          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OI-003</td>
-          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
-          <td contenteditable="true">Bundle cap pressure — Crème 4oz</td>
-          <td contenteditable="true">Crème 4oz has only 3 sellable singles remaining after bundle allocations. Both Barrier Sets use the 4oz — if both bundle caps sell through, no single units remain.</td>
-          <td contenteditable="true">Either reduce Barrier Set bundle caps (currently 9 each) OR produce an additional batch of Crème 4oz before launch.</td>
-          <td contenteditable="true">Ashley</td>
-          <td contenteditable="true">Before launch</td>
-          <td><span class="pill p-amber" contenteditable="true">Active</span></td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="tbl-actions">
-    <button class="btn" onclick="addRow('tbl-oi', ['OI-00?','<span class=\'pill p-gray\'>Active</span>','Title','Description','Decision needed','Ashley','—','<span class=\'pill p-gray\'>Open</span>'])">+ Add Open Item</button>
-  </div>
+    <section class="page" id="sku-master" data-page="sku-master"><h2 contenteditable="true">SKU Master</h2>
+      <h3 contenteditable="true">Singles</h3>
+      <table class="sortable editable-table" data-table="sku-singles"><thead><tr><th>SKU</th><th>Product</th><th>Variant</th><th>Size</th><th>Container</th><th>Price</th><th>PAO</th><th>Notes</th><th>Remove</th></tr></thead><tbody>
+        <tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Lipid Barrier Crème</td><td contenteditable="true">Unscented</td><td contenteditable="true">2 oz / 56g</td><td contenteditable="true">Frosted glass jar</td><td contenteditable="true">30</td><td contenteditable="true">12M</td><td contenteditable="true">HERO</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-LBC-4OZ</td><td contenteditable="true">Lipid Barrier Crème</td><td contenteditable="true">Unscented</td><td contenteditable="true">4 oz / 113g</td><td contenteditable="true">Frosted glass jar</td><td contenteditable="true">54</td><td contenteditable="true">12M</td><td contenteditable="true">—</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-RBP-EMBER</td><td contenteditable="true">Refining Body Polish</td><td contenteditable="true">Ember</td><td contenteditable="true">8 oz / 227g</td><td contenteditable="true">Amber PET jar</td><td contenteditable="true">42</td><td contenteditable="true">12M</td><td contenteditable="true">Amyris/Vetiver/Frankincense</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-RBP-GROVE</td><td contenteditable="true">Refining Body Polish</td><td contenteditable="true">Grove</td><td contenteditable="true">8 oz / 227g</td><td contenteditable="true">Amber PET jar</td><td contenteditable="true">42</td><td contenteditable="true">12M</td><td contenteditable="true">Vanilla/Cardamom/Sandalwood</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-MOS-BARE</td><td contenteditable="true">Mineral &amp; Oat Soak</td><td contenteditable="true">Bare</td><td contenteditable="true">10 oz / 284g</td><td contenteditable="true">Matte black mylar pouch</td><td contenteditable="true">32</td><td contenteditable="true">24M</td><td contenteditable="true">Unscented</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-MOS-DRIFT</td><td contenteditable="true">Mineral &amp; Oat Soak</td><td contenteditable="true">Drift</td><td contenteditable="true">10 oz / 284g</td><td contenteditable="true">Matte black mylar pouch</td><td contenteditable="true">32</td><td contenteditable="true">24M</td><td contenteditable="true">Lavender/Bergamot/Eucalyptus/Roman chamomile</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-GMS-BARE</td><td contenteditable="true">Lipid + Milk Cleansing Bar</td><td contenteditable="true">Bare</td><td contenteditable="true">4.7 oz / 134g</td><td contenteditable="true">Bar wrap</td><td contenteditable="true">14</td><td contenteditable="true">—</td><td contenteditable="true">CP soap 7% superfat</td><td class="row-del">✕</td></tr>
+        <tr draggable="true"><td contenteditable="true">OE-GMS-SOLACE</td><td contenteditable="true">Lipid + Milk Cleansing Bar</td><td contenteditable="true">Solace</td><td contenteditable="true">4.7 oz / 134g</td><td contenteditable="true">Bar wrap</td><td contenteditable="true">14</td><td contenteditable="true">—</td><td contenteditable="true">Roman chamomile CO2/Vanilla/Sandalwood</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="sku-singles" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="sku-singles" contenteditable="true">+ Add Column</button></div>
+      <h3 contenteditable="true">Bundles</h3>
+      <table class="sortable editable-table" data-table="sku-bundles"><thead><tr><th>Bundle SKU</th><th>Name</th><th>Includes</th><th>Retail Price</th><th>Savings</th><th>Shopify Cap</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-1</td><td contenteditable="true">Barrier Set — Ember</td><td contenteditable="true">Crème 4oz + Polish Ember</td><td contenteditable="true">84</td><td contenteditable="true">12</td><td contenteditable="true">9</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-2</td><td contenteditable="true">Barrier Set — Grove</td><td contenteditable="true">Crème 4oz + Polish Grove</td><td contenteditable="true">84</td><td contenteditable="true">12</td><td contenteditable="true">9</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-DISC-1</td><td contenteditable="true">Discovery Set — Ember</td><td contenteditable="true">Soak Bare + Polish Ember + Bar Bare + Crème 2oz</td><td contenteditable="true">104</td><td contenteditable="true">14</td><td contenteditable="true">5</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-DISC-2</td><td contenteditable="true">Discovery Set — Grove</td><td contenteditable="true">Soak Drift + Polish Grove + Bar Solace + Crème 2oz</td><td contenteditable="true">104</td><td contenteditable="true">14</td><td contenteditable="true">5</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-SOAK</td><td contenteditable="true">Mineral Soak Set</td><td contenteditable="true">Soak Bare + Soak Drift</td><td contenteditable="true">58</td><td contenteditable="true">6</td><td contenteditable="true">14</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-BUNDLE-SOAP</td><td contenteditable="true">Soap Duo</td><td contenteditable="true">Bar Bare + Bar Solace</td><td contenteditable="true">25</td><td contenteditable="true">3</td><td contenteditable="true">10</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="warn" contenteditable="true">FOUNDERS15: 15% off singles only. Does not apply to bundles.</div>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="sku-bundles" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="sku-bundles" contenteditable="true">+ Add Column</button></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="callout c-info" style="margin-top:20px">
-    <strong>Note:</strong> Items marked Critical block purchasing and production. Resolve OI-001 before placing any ingredient order. OI-002 and OI-003 must be resolved before launch.
-  </div>
-</section>
+    <section class="page" id="formulas-inci" data-page="formulas-inci"><h2 contenteditable="true">Formulas &amp; INCI</h2><div class="card"><p contenteditable="true">Status: <span class="pill pill-red">Locked</span></p></div>
+      <table class="sortable editable-table" data-table="inci-table"><thead><tr><th>Product</th><th>INCI (locked source, editable copy)</th><th>Allergen</th><th>Notes</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">Crème</td><td contenteditable="true">Ingredients: Tallow, Rosa Canina Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Simmondsia Chinensis (Jojoba) Seed Oil, Squalane, Calendula Officinalis Flower Extract (and) Helianthus Annuus (Sunflower) Seed Oil, Borago Officinalis Seed Oil, Hippophae Rhamnoides Fruit Oil, Cera Alba, Boswellia Serrata Resin Extract, Maranta Arundinacea Root Powder, Tocopherol.</td><td contenteditable="true">—</td><td contenteditable="true">Add calendula + frankincense at ≤140°F/60°C</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Polish Ember</td><td contenteditable="true">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Tocopherol, Amyris Balsamifera Bark Oil, Vetiveria Zizanoides Root Oil, Boswellia Carterii Oil.</td><td contenteditable="true">—</td><td contenteditable="true">EO blend Ember</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Polish Grove</td><td contenteditable="true">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Vanilla Planifolia Fruit Extract, Tocopherol, Amyris Balsamifera Bark Oil, Elettaria Cardamomum Seed Oil, Santalum Album Oil.</td><td contenteditable="true">—</td><td contenteditable="true">EO blend Grove</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Soak Bare</td><td contenteditable="true">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract.</td><td contenteditable="true">Contains goat milk</td><td contenteditable="true">Base formula</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Soak Drift</td><td contenteditable="true">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract, Lavandula Angustifolia (Lavender) Oil, Eucalyptus Globulus Leaf Oil, Citrus Aurantium Bergamia (Bergamot) Peel Oil, Anthemis Nobilis Flower Oil.</td><td contenteditable="true">Contains goat milk</td><td contenteditable="true">Drift EO 0.5%</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Bar Bare</td><td contenteditable="true">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin.</td><td contenteditable="true">Contains goat milk; contains honey</td><td contenteditable="true">CP soap superfat 7%</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Bar Solace</td><td contenteditable="true">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin, Anthemis Nobilis Flower Extract, Vanilla Planifolia Fruit Extract, Santalum Album Oil.</td><td contenteditable="true">Contains goat milk; contains honey</td><td contenteditable="true">Solace EO 0.5%</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="inci-table" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="inci-table" contenteditable="true">+ Add Column</button></div>
+      <div class="section" data-attach="formulas-inci"></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<!-- ════════════════════════════════════════════════════════
-     SKU MASTER
-════════════════════════════════════════════════════════ -->
-<section id="pg-skumaster" class="page">
-  <div class="page-title">SKU Master</div>
-  <div class="page-sub">All products and bundles — single source of truth</div>
+    <section class="page" id="formula-calculator" data-page="formula-calculator"><h2 contenteditable="true">Formula Calculator</h2>
+      <div class="toolbar">
+        <label contenteditable="true">Product</label>
+        <select id="formulaProduct"><option>Crème</option><option>Polish Ember</option><option>Polish Grove</option><option>Soak Bare</option><option>Soak Drift</option><option>Bar Bare</option><option>Bar Solace</option></select>
+        <label contenteditable="true">Batch Size</label><input id="formulaBatch" type="number" value="1000" />
+        <select id="formulaUnit"><option value="g">g</option><option value="oz">oz</option></select>
+        <label contenteditable="true">Overage %</label><input id="formulaOverage" type="number" value="20" />
+        <button class="btn tiny" id="calcFormula" contenteditable="true">Calculate</button>
+        <button class="btn tiny" id="saveFormulaBtn" contenteditable="true">Save Formula</button>
+      </div>
+      <table class="editable-table sortable" data-table="formula-output"><thead><tr><th>Ingredient</th><th>%</th><th>grams needed</th><th>oz needed</th><th>cost/oz</th><th>total cost</th><th>Remove</th></tr></thead><tbody></tbody></table>
+      <div class="card"><p contenteditable="true">Summary: Total Batch Weight <span id="sumWeight" contenteditable="true">0</span> | Total COGS <span id="sumCost" contenteditable="true">0</span> | Cost per Unit <span id="sumCPU" contenteditable="true">0</span></p></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="callout c-info">
-    <strong>FOUNDERS15</strong> — 15% off singles only. Does not apply to bundles. No exceptions.
-  </div>
+    <section class="page" id="batch-calculator" data-page="batch-calculator"><h2 contenteditable="true">Batch Calculator</h2>
+      <table class="sortable editable-table" data-table="batch-input"><thead><tr><th>SKU</th><th>units to produce</th><th>fill weight g</th><th>overage %</th><th>batch size needed g</th><th>lot code</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">10</td><td contenteditable="true">56</td><td contenteditable="true">20</td><td class="batch-needed" contenteditable="true">672</td><td class="lot-code" contenteditable="true">OE-LBC-2OZ-20260417-001</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-4OZ</td><td contenteditable="true">6</td><td contenteditable="true">113</td><td contenteditable="true">20</td><td class="batch-needed" contenteditable="true">813.6</td><td class="lot-code" contenteditable="true">OE-LBC-4OZ-20260417-001</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-RBP-EMBER</td><td contenteditable="true">5</td><td contenteditable="true">227</td><td contenteditable="true">20</td><td class="batch-needed" contenteditable="true">1362</td><td class="lot-code" contenteditable="true">OE-RBP-EMBER-20260417-001</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-MOS-BARE</td><td contenteditable="true">5</td><td contenteditable="true">284</td><td contenteditable="true">20</td><td class="batch-needed" contenteditable="true">1704</td><td class="lot-code" contenteditable="true">OE-MOS-BARE-20260417-001</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-GMS-BARE</td><td contenteditable="true">10</td><td contenteditable="true">134</td><td contenteditable="true">20</td><td class="batch-needed" contenteditable="true">1608</td><td class="lot-code" contenteditable="true">OE-GMS-BARE-20260417-001</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="batch-input" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="batch-input" contenteditable="true">+ Add Column</button><button class="btn tiny" id="recalcBatch" contenteditable="true">Recalculate</button><button class="btn tiny" id="exportBatchCSV" contenteditable="true">Export CSV</button></div>
+      <div class="card"><h3 contenteditable="true">Soap Cure Tracker</h3><label contenteditable="true">Batch Date</label> <input id="soapBatchDate" type="date" value="2026-04-17"/> <span contenteditable="true">Cure Complete: <strong id="cureDate">2026-05-29</strong></span></div>
+      <div class="card"><h3 contenteditable="true">Aggregated Ingredients</h3><table class="sortable editable-table" data-table="batch-agg"><thead><tr><th>Ingredient</th><th>Total g</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">Tallow</td><td contenteditable="true">0</td><td class="row-del">✕</td></tr></tbody></table></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="section-label">Singles — 8 Products</div>
-  <div class="tbl-wrap">
-    <table id="tbl-singles">
-      <thead>
-        <tr>
-          <th onclick="sortTable('tbl-singles',0)">SKU</th>
-          <th onclick="sortTable('tbl-singles',1)">Product Name</th>
-          <th onclick="sortTable('tbl-singles',2)">Variant / Scent</th>
-          <th onclick="sortTable('tbl-singles',3)">Size</th>
-          <th onclick="sortTable('tbl-singles',4)">Container</th>
-          <th onclick="sortTable('tbl-singles',5)">Price</th>
-          <th onclick="sortTable('tbl-singles',6)">PAO</th>
-          <th onclick="sortTable('tbl-singles',7)">Notes</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td contenteditable="true">OE-LBC-2OZ</td>
-          <td contenteditable="true">Lipid Barrier Crème</td>
-          <td contenteditable="true">Bare (unscented)</td>
-          <td contenteditable="true">2 oz / 56g</td>
-          <td contenteditable="true">Frosted glass jar</td>
-          <td contenteditable="true">$30</td>
-          <td contenteditable="true">12M</td>
-          <td contenteditable="true"><strong>HERO</strong> · unscented · anhydrous</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-LBC-4OZ</td>
-          <td contenteditable="true">Lipid Barrier Crème</td>
-          <td contenteditable="true">Bare (unscented)</td>
-          <td contenteditable="true">4 oz / 113g</td>
-          <td contenteditable="true">Frosted glass jar</td>
-          <td contenteditable="true">$54</td>
-          <td contenteditable="true">12M</td>
-          <td contenteditable="true">Unscented · anhydrous · ⚠️ OI-003</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-RBP-EMBER</td>
-          <td contenteditable="true">Refining Body Polish</td>
-          <td contenteditable="true">Ember</td>
-          <td contenteditable="true">8 oz / 227g</td>
-          <td contenteditable="true">Amber PET jar</td>
-          <td contenteditable="true">$42</td>
-          <td contenteditable="true">12M</td>
-          <td contenteditable="true">Amyris · vetiver (Haiti) · frankincense CO2</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-RBP-GROVE</td>
-          <td contenteditable="true">Refining Body Polish</td>
-          <td contenteditable="true">Grove</td>
-          <td contenteditable="true">8 oz / 227g</td>
-          <td contenteditable="true">Amber PET jar</td>
-          <td contenteditable="true">$42</td>
-          <td contenteditable="true">12M</td>
-          <td contenteditable="true">Vanilla oleoresin · cardamom · sandalwood</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-MOS-BARE</td>
-          <td contenteditable="true">Mineral &amp; Oat Soak</td>
-          <td contenteditable="true">Bare (unscented)</td>
-          <td contenteditable="true">10 oz / 284g</td>
-          <td contenteditable="true">Matte black mylar pouch</td>
-          <td contenteditable="true">$32</td>
-          <td contenteditable="true">24M</td>
-          <td contenteditable="true">Unscented · allergen: goat milk</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-MOS-DRIFT</td>
-          <td contenteditable="true">Mineral &amp; Oat Soak</td>
-          <td contenteditable="true">Drift</td>
-          <td contenteditable="true">10 oz / 284g</td>
-          <td contenteditable="true">Matte black mylar pouch</td>
-          <td contenteditable="true">$32</td>
-          <td contenteditable="true">24M</td>
-          <td contenteditable="true">Lavender · bergamot FCF · eucalyptus · roman chamomile · allergen: goat milk</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-GMS-BARE</td>
-          <td contenteditable="true">Lipid + Milk Cleansing Bar</td>
-          <td contenteditable="true">Bare (unscented)</td>
-          <td contenteditable="true">4.7 oz / 134g</td>
-          <td contenteditable="true">Kraft bar wrap</td>
-          <td contenteditable="true">$14</td>
-          <td contenteditable="true">—</td>
-          <td contenteditable="true">Cold process · 7% superfat · allergens: goat milk, honey</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-GMS-SOLACE</td>
-          <td contenteditable="true">Lipid + Milk Cleansing Bar</td>
-          <td contenteditable="true">Solace</td>
-          <td contenteditable="true">4.7 oz / 134g</td>
-          <td contenteditable="true">Kraft bar wrap</td>
-          <td contenteditable="true">$14</td>
-          <td contenteditable="true">—</td>
-          <td contenteditable="true">Roman chamomile CO2 · vanilla oleoresin · sandalwood · allergens: goat milk, honey</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="tbl-actions">
-    <button class="btn" onclick="addRow('tbl-singles', ['OE-???','Product Name','Variant','Size','Container','$0','12M','Notes'])">+ Add SKU</button>
-  </div>
+    <section class="page" id="labels-compliance" data-page="labels-compliance"><h2 contenteditable="true">Labels &amp; Compliance</h2>
+      <ul class="editable-list" data-list="label-checks">
+        <li contenteditable="true">Brand name and product name — exact match to SKU Master <span class="item-delete">✕</span></li><li contenteditable="true">Net weight in imperial and metric <span class="item-delete">✕</span></li><li contenteditable="true">Full INCI list in descending order — exact match to locked formula <span class="item-delete">✕</span></li><li contenteditable="true">PAO symbol + duration (12M or 24M) <span class="item-delete">✕</span></li><li contenteditable="true">Lot number field <span class="item-delete">✕</span></li><li contenteditable="true">Directions for use <span class="item-delete">✕</span></li><li contenteditable="true">Warning: For external use only. Discontinue if irritation occurs. <span class="item-delete">✕</span></li><li contenteditable="true">Allergen statement where applicable <span class="item-delete">✕</span></li><li contenteditable="true">Storage: Store below 75°F · Keep out of reach of children <span class="item-delete">✕</span></li><li contenteditable="true">No drug claims <span class="item-delete">✕</span></li>
+      </ul>
+      <div class="list-tools"><button class="btn tiny add-list-item" data-target="label-checks" contenteditable="true">+ Add Item</button></div>
+      <table class="sortable editable-table" data-table="label-status"><thead><tr><th>SKU</th><th>Status</th><th>QC Sign-off</th><th>Printer</th><th>Dimensions</th><th>Notes</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Draft</td><td contenteditable="true">Pending</td><td contenteditable="true">StickerMule</td><td contenteditable="true">2.0 x 2.0</td><td contenteditable="true">Needs PAO icon</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="section" data-attach="labels-compliance"></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="section-label" style="margin-top:30px">Bundles — 6 Products</div>
-  <div class="tbl-wrap">
-    <table id="tbl-bundles">
-      <thead>
-        <tr>
-          <th onclick="sortTable('tbl-bundles',0)">Bundle SKU</th>
-          <th onclick="sortTable('tbl-bundles',1)">Name</th>
-          <th onclick="sortTable('tbl-bundles',2)">Includes</th>
-          <th onclick="sortTable('tbl-bundles',3)">Retail Price</th>
-          <th onclick="sortTable('tbl-bundles',4)">Savings</th>
-          <th onclick="sortTable('tbl-bundles',5)">Shopify Cap</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-BARR-1</td>
-          <td contenteditable="true">Barrier Set — Ember</td>
-          <td contenteditable="true">Crème 4oz + Polish Ember</td>
-          <td contenteditable="true">$84</td>
-          <td contenteditable="true">$12</td>
-          <td contenteditable="true">9</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-BARR-2</td>
-          <td contenteditable="true">Barrier Set — Grove</td>
-          <td contenteditable="true">Crème 4oz + Polish Grove</td>
-          <td contenteditable="true">$84</td>
-          <td contenteditable="true">$12</td>
-          <td contenteditable="true">9</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-DISC-1</td>
-          <td contenteditable="true">Discovery Set — Ember</td>
-          <td contenteditable="true">Soak Bare + Polish Ember + Bar Bare + Crème 2oz</td>
-          <td contenteditable="true">$104</td>
-          <td contenteditable="true">$14</td>
-          <td contenteditable="true">5</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-DISC-2</td>
-          <td contenteditable="true">Discovery Set — Grove</td>
-          <td contenteditable="true">Soak Drift + Polish Grove + Bar Solace + Crème 2oz</td>
-          <td contenteditable="true">$104</td>
-          <td contenteditable="true">$14</td>
-          <td contenteditable="true">5</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-SOAK</td>
-          <td contenteditable="true">Mineral Soak Set</td>
-          <td contenteditable="true">Soak Bare + Soak Drift</td>
-          <td contenteditable="true">$58</td>
-          <td contenteditable="true">$6</td>
-          <td contenteditable="true">14</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-        <tr>
-          <td contenteditable="true">OE-BUNDLE-SOAP</td>
-          <td contenteditable="true">Soap Duo</td>
-          <td contenteditable="true">Bar Bare + Bar Solace</td>
-          <td contenteditable="true">$25</td>
-          <td contenteditable="true">$3</td>
-          <td contenteditable="true">10</td>
-          <td><button class="btn btn-del" onclick="delRow(this)">✕</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="tbl-actions">
-    <button class="btn" onclick="addRow('tbl-bundles', ['OE-BUNDLE-???','Bundle Name','Includes','$0','$0','0'])">+ Add Bundle</button>
-  </div>
-</section>
+    <section class="page" id="cogs" data-page="cogs"><h2 contenteditable="true">COGS Sheet</h2>
+      <div class="toolbar"><label contenteditable="true">Target DTC %</label><input id="targetDtc" type="number" value="65"><label contenteditable="true">Target Wholesale %</label><input id="targetWs" type="number" value="45"><button class="btn tiny" id="recalcCogs" contenteditable="true">Recalculate</button><button class="btn tiny" id="exportCogsCSV" contenteditable="true">Export CSV</button></div>
+      <table class="sortable editable-table" data-table="cogs-singles"><thead><tr><th>SKU</th><th>Product</th><th>Retail Price</th><th>COGS</th><th>DTC Margin %</th><th>Wholesale Price (50%)</th><th>Wholesale Margin %</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Lipid Barrier Crème 2oz</td><td contenteditable="true">30</td><td contenteditable="true">8</td><td class="dtc" contenteditable="true">73.3</td><td class="ws-price" contenteditable="true">15</td><td class="ws-margin" contenteditable="true">46.7</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-4OZ</td><td contenteditable="true">Lipid Barrier Crème 4oz</td><td contenteditable="true">54</td><td contenteditable="true">16</td><td class="dtc" contenteditable="true">70.4</td><td class="ws-price" contenteditable="true">27</td><td class="ws-margin" contenteditable="true">40.7</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-RBP-EMBER</td><td contenteditable="true">Refining Body Polish Ember</td><td contenteditable="true">42</td><td contenteditable="true">13</td><td class="dtc" contenteditable="true">69</td><td class="ws-price" contenteditable="true">21</td><td class="ws-margin" contenteditable="true">38.1</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-RBP-GROVE</td><td contenteditable="true">Refining Body Polish Grove</td><td contenteditable="true">42</td><td contenteditable="true">13</td><td class="dtc" contenteditable="true">69</td><td class="ws-price" contenteditable="true">21</td><td class="ws-margin" contenteditable="true">38.1</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-MOS-BARE</td><td contenteditable="true">Mineral &amp; Oat Soak Bare</td><td contenteditable="true">32</td><td contenteditable="true">9</td><td class="dtc" contenteditable="true">71.9</td><td class="ws-price" contenteditable="true">16</td><td class="ws-margin" contenteditable="true">43.8</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-MOS-DRIFT</td><td contenteditable="true">Mineral &amp; Oat Soak Drift</td><td contenteditable="true">32</td><td contenteditable="true">10</td><td class="dtc" contenteditable="true">68.8</td><td class="ws-price" contenteditable="true">16</td><td class="ws-margin" contenteditable="true">37.5</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-GMS-BARE</td><td contenteditable="true">Lipid + Milk Cleansing Bar Bare</td><td contenteditable="true">14</td><td contenteditable="true">4</td><td class="dtc" contenteditable="true">71.4</td><td class="ws-price" contenteditable="true">7</td><td class="ws-margin" contenteditable="true">42.9</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-GMS-SOLACE</td><td contenteditable="true">Lipid + Milk Cleansing Bar Solace</td><td contenteditable="true">14</td><td contenteditable="true">4.5</td><td class="dtc" contenteditable="true">67.9</td><td class="ws-price" contenteditable="true">7</td><td class="ws-margin" contenteditable="true">35.7</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="cogs-singles" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="cogs-singles" contenteditable="true">+ Add Column</button></div>
+      <h3 contenteditable="true">Bundle COGS</h3>
+      <table class="sortable editable-table" data-table="cogs-bundles"><thead><tr><th>SKU</th><th>Bundle</th><th>Retail</th><th>COGS</th><th>Margin %</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-1</td><td contenteditable="true">Barrier Set — Ember</td><td contenteditable="true">84</td><td contenteditable="true">29</td><td contenteditable="true">65.5</td><td class="row-del">✕</td></tr></tbody></table>
+      <h3 contenteditable="true">Ingredient cost tracker</h3>
+      <table class="sortable editable-table" data-table="ingredient-costs"><thead><tr><th>Ingredient</th><th>Cost/oz</th><th>Supplier</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">Tallow</td><td contenteditable="true">0.6</td><td contenteditable="true">Local butcher/Fatworks</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<!-- ════════════════════════════════════════════════════════
-     FORMULAS & INCI
-════════════════════════════════════════════════════════ -->
-<section id="pg-formulas" class="page">
-  <div class="page-title">Formulas &amp; INCI</div>
-  <div class="page-sub">Locked formulas — INCI strings and ingredient percentages</div>
+    <section class="page" id="pricing" data-page="pricing"><h2 contenteditable="true">Pricing &amp; Quantities</h2>
+      <table class="sortable editable-table" data-table="pricing-singles"><thead><tr><th>SKU</th><th>Product</th><th>Variant</th><th>Size</th><th>Price</th><th>On Hand</th><th>Bundle Alloc</th><th>10% Buffer</th><th>Sellable</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">OE-MOS-BARE</td><td contenteditable="true">Mineral &amp; Oat Soak</td><td contenteditable="true">Bare</td><td contenteditable="true">10oz</td><td contenteditable="true">32</td><td contenteditable="true">25</td><td contenteditable="true">19</td><td contenteditable="true">3</td><td class="sellable" contenteditable="true">3</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-MOS-DRIFT</td><td contenteditable="true">Mineral &amp; Oat Soak</td><td contenteditable="true">Drift</td><td contenteditable="true">10oz</td><td contenteditable="true">32</td><td contenteditable="true">28</td><td contenteditable="true">19</td><td contenteditable="true">3</td><td class="sellable" contenteditable="true">6</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-RBP-EMBER</td><td contenteditable="true">Refining Body Polish</td><td contenteditable="true">Ember</td><td contenteditable="true">8oz</td><td contenteditable="true">42</td><td contenteditable="true">20</td><td contenteditable="true">14</td><td contenteditable="true">2</td><td class="sellable" contenteditable="true">4</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-RBP-GROVE</td><td contenteditable="true">Refining Body Polish</td><td contenteditable="true">Grove</td><td contenteditable="true">8oz</td><td contenteditable="true">42</td><td contenteditable="true">20</td><td contenteditable="true">14</td><td contenteditable="true">2</td><td class="sellable" contenteditable="true">4</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-GMS-BARE</td><td contenteditable="true">Lipid + Milk Cleansing Bar</td><td contenteditable="true">Bare</td><td contenteditable="true">4.7oz</td><td contenteditable="true">14</td><td contenteditable="true">20</td><td contenteditable="true">13</td><td contenteditable="true">2</td><td class="sellable" contenteditable="true">5</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-GMS-SOLACE</td><td contenteditable="true">Lipid + Milk Cleansing Bar</td><td contenteditable="true">Solace</td><td contenteditable="true">4.7oz</td><td contenteditable="true">14</td><td contenteditable="true">20</td><td contenteditable="true">13</td><td contenteditable="true">2</td><td class="sellable" contenteditable="true">5</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Lipid Barrier Crème</td><td contenteditable="true">Unscented</td><td contenteditable="true">2oz</td><td contenteditable="true">30</td><td contenteditable="true">40</td><td contenteditable="true">10</td><td contenteditable="true">4</td><td class="sellable" contenteditable="true">26</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">OE-LBC-4OZ</td><td contenteditable="true">Lipid Barrier Crème</td><td contenteditable="true">Unscented</td><td contenteditable="true">4oz</td><td contenteditable="true">54</td><td contenteditable="true">24</td><td contenteditable="true">18</td><td contenteditable="true">3</td><td class="sellable" contenteditable="true">3</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="pricing-singles" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="pricing-singles" contenteditable="true">+ Add Column</button></div>
+      <h3 contenteditable="true">Bundles</h3>
+      <table class="sortable editable-table" data-table="pricing-bundles"><thead><tr><th>SKU</th><th>Name</th><th>Price</th><th>Cap</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-1</td><td contenteditable="true">Barrier Set — Ember</td><td contenteditable="true">84</td><td contenteditable="true">9</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-2</td><td contenteditable="true">Barrier Set — Grove</td><td contenteditable="true">84</td><td contenteditable="true">9</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OE-BUNDLE-DISC-1</td><td contenteditable="true">Discovery Set — Ember</td><td contenteditable="true">104</td><td contenteditable="true">5</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OE-BUNDLE-DISC-2</td><td contenteditable="true">Discovery Set — Grove</td><td contenteditable="true">104</td><td contenteditable="true">5</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OE-BUNDLE-SOAK</td><td contenteditable="true">Mineral Soak Set</td><td contenteditable="true">58</td><td contenteditable="true">14</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OE-BUNDLE-SOAP</td><td contenteditable="true">Soap Duo</td><td contenteditable="true">25</td><td contenteditable="true">10</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="warn" contenteditable="true">Watch-outs: Crème 4oz only 3 sellable singles. Soak Bare only 3 sellable singles. Shopify: Track quantity ON; Continue selling when OOS OFF.</div>
+      <div class="good" contenteditable="true">FOUNDERS15 promo active on singles only.</div>
+      <button class="btn tiny" id="exportPricingCSV" contenteditable="true">Export CSV</button>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <div class="tab-row" id="ftab-row">
-    <button class="tab-btn active" onclick="switchTab('ftab-row','ftab-','creme',this)">Crème</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','ember',this)">Polish Ember</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','grove',this)">Polish Grove</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','soak-bare',this)">Soak Bare</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','soak-drift',this)">Soak Drift</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','bar-bare',this)">Bar Bare</button>
-    <button class="tab-btn" onclick="switchTab('ftab-row','ftab-','bar-solace',this)">Bar Solace</button>
-  </div>
+    <section class="page" id="purchase-list" data-page="purchase-list"><h2 contenteditable="true">Purchase List</h2>
+      <div class="card" contenteditable="true">Budget $3k–$5k | Low ~$2,340 | High ~$4,370</div>
+      <table class="sortable editable-table" data-table="purchase-items"><thead><tr><th>Phase</th><th>Item</th><th>Qty</th><th>Where</th><th>Priority</th><th>Est Cost</th><th>Done</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">Garage</td><td contenteditable="true">Foam weatherstrip tape + moving blanket (door gap seal)</td><td contenteditable="true">1 set</td><td contenteditable="true">Home Depot/Walmart</td><td contenteditable="true">TODAY</td><td contenteditable="true">20–35</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Equipment</td><td contenteditable="true">Precision digital scale 0.01g</td><td contenteditable="true">1</td><td contenteditable="true">Amazon</td><td contenteditable="true">MUST HAVE</td><td contenteditable="true">25–45</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Shared Ingredients</td><td contenteditable="true">Grass-fed beef tallow · 14.3 lb → buy 15–16 lb</td><td contenteditable="true">1 lot</td><td contenteditable="true">Local butcher/Fatworks</td><td contenteditable="true">FIRST ORDER</td><td contenteditable="true">45–90</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Soap (Order First)</td><td contenteditable="true">Sodium hydroxide lye 100% pure NaOH · 1.6 lb → buy 2 lb</td><td contenteditable="true">1</td><td contenteditable="true">Essential Depot/Bramble Berry</td><td contenteditable="true">ORDER FIRST</td><td contenteditable="true">12–22</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Packaging</td><td contenteditable="true">Frosted glass jar 2oz G864CLF 58mm · 40 → order 50</td><td contenteditable="true">50</td><td contenteditable="true">C&amp;P/SKS Bottle</td><td contenteditable="true">MUST HAVE</td><td contenteditable="true">40–70</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Labels</td><td contenteditable="true">Professional label print run all 8 SKUs · 25–50/SKU</td><td contenteditable="true">1 run</td><td contenteditable="true">StickerMule</td><td contenteditable="true">MUST HAVE</td><td contenteditable="true">80–160</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Business</td><td contenteditable="true">Product liability insurance</td><td contenteditable="true">1</td><td contenteditable="true">Next Insurance/IBIG</td><td contenteditable="true">REQUIRED</td><td contenteditable="true">400–800/yr</td><td contenteditable="true">No</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="purchase-items" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="purchase-items" contenteditable="true">+ Add Column</button></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- CRÈME -->
-  <div class="tab-pane active" id="ftab-creme">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Lipid Barrier Crème</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-creme">Ingredients: Tallow, Rosa Canina Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Simmondsia Chinensis (Jojoba) Seed Oil, Squalane, Calendula Officinalis Flower Extract (and) Helianthus Annuus (Sunflower) Seed Oil, Borago Officinalis Seed Oil, Hippophae Rhamnoides Fruit Oil, Cera Alba, Boswellia Serrata Resin Extract, Maranta Arundinacea Root Powder, Tocopherol.</div>
-      <button class="inci-copy" onclick="copyEl('inci-creme',this)">Copy</button>
-    </div>
-    <div class="callout c-warn" style="margin-top:10px" contenteditable="true">
-      <strong>Heat note:</strong> Add calendula infused sunflower oil and frankincense CO2 resin at or below 140°F / 60°C to preserve active constituents.
-    </div>
-    <div class="section-label">Formula Percentages</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-creme-pct">
-        <thead><tr><th onclick="sortTable('tbl-creme-pct',0)">Ingredient</th><th onclick="sortTable('tbl-creme-pct',1)">%</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Tallow (grass-fed, rendered)</td><td contenteditable="true">55%</td><td contenteditable="true">Base fat · primary barrier lipid</td></tr>
-          <tr><td contenteditable="true">Rosehip seed oil (Rosa Canina)</td><td contenteditable="true">10%</td><td contenteditable="true">Rich in linoleic acid</td></tr>
-          <tr><td contenteditable="true">Meadowfoam seed oil (Limnanthes Alba)</td><td contenteditable="true">8%</td><td contenteditable="true">Oxidative stability · emollient</td></tr>
-          <tr><td contenteditable="true">Jojoba oil (Simmondsia Chinensis)</td><td contenteditable="true">7%</td><td contenteditable="true">Liquid wax ester · non-greasy</td></tr>
-          <tr><td contenteditable="true">Squalane (olive-derived)</td><td contenteditable="true">5%</td><td contenteditable="true">Lightweight hydration · stability</td></tr>
-          <tr><td contenteditable="true">Calendula infused sunflower oil</td><td contenteditable="true">5%</td><td contenteditable="true">Add ≤140°F/60°C · soothing</td></tr>
-          <tr><td contenteditable="true">Borage seed oil (Borago Officinalis)</td><td contenteditable="true">3%</td><td contenteditable="true">High GLA content</td></tr>
-          <tr><td contenteditable="true">Sea buckthorn CO2 (Hippophae Rhamnoides)</td><td contenteditable="true">2%</td><td contenteditable="true">Dense in carotenoids · use sparingly</td></tr>
-          <tr><td contenteditable="true">Beeswax (Cera Alba)</td><td contenteditable="true">2%</td><td contenteditable="true">Structure · occlusivity</td></tr>
-          <tr><td contenteditable="true">Frankincense CO2 resin (Boswellia Serrata)</td><td contenteditable="true">1%</td><td contenteditable="true">Add ≤140°F/60°C · Eden Botanicals FairWild CO2 · Somalia</td></tr>
-          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">1%</td><td contenteditable="true">Texture · absorbs excess oil</td></tr>
-          <tr><td contenteditable="true">Tocopherol (Vitamin E, mixed)</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant preservation · includes 0.5% Vit E</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-creme-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-    <div class="section-label">Notes</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">Anhydrous formula — no water phase. No preservative required. Melt-and-pour method. Store below 75°F. PAO 12M once opened.</div>
-  </div>
+    <section class="page" id="production" data-page="production"><h2 contenteditable="true">Production &amp; Batches</h2>
+      <table class="sortable editable-table" data-table="batch-log"><thead><tr><th>Batch ID</th><th>SKU</th><th>Date</th><th>Batch Size</th><th>Yield</th><th>Lot Code</th><th>QC Pass</th><th>Notes</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">B-001</td><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">2026-06-01</td><td contenteditable="true">3.5kg</td><td contenteditable="true">60 units</td><td contenteditable="true">OE-LBC-2OZ-20260601-001</td><td contenteditable="true">Pending</td><td contenteditable="true">Pilot run</td><td class="row-del">✕</td></tr></tbody></table>
+      <table class="sortable editable-table" data-table="sop-status"><thead><tr><th>SKU</th><th>SOP exists</th><th>Last reviewed</th><th>Version</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Yes</td><td contenteditable="true">2026-04-10</td><td contenteditable="true">v1.0</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="section" data-attach="production"></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- POLISH EMBER -->
-  <div class="tab-pane" id="ftab-ember">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Refining Body Polish — Ember</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-ember">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Tocopherol, Amyris Balsamifera Bark Oil, Vetiveria Zizanoides Root Oil, Boswellia Carterii Oil.</div>
-      <button class="inci-copy" onclick="copyEl('inci-ember',this)">Copy</button>
-    </div>
-    <div class="section-label">Scent Profile</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
-      Amyris · Vetiver (double-distilled Haiti, Eden Botanicals) · Frankincense CO2<br>
-      EO blend at 0.5% total: Amyris 50% · Vetiver 30% · Frankincense 20%<br>
-      INCI update locked: Vetiveria Zizanoides Root Oil replaces previous cedar.
-    </div>
-    <div class="section-label">Formula Percentages (base same as Grove)</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-ember-pct">
-        <thead><tr><th onclick="sortTable('tbl-ember-pct',0)">Ingredient</th><th onclick="sortTable('tbl-ember-pct',1)">%</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Cane sugar (Sucrose)</td><td contenteditable="true">41%</td><td contenteditable="true">Primary exfoliant · fine grain</td></tr>
-          <tr><td contenteditable="true">Tallow (grass-fed, rendered)</td><td contenteditable="true">10%</td><td contenteditable="true">Skin-compatible lipid</td></tr>
-          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">9%</td><td contenteditable="true">Mineral-rich secondary exfoliant</td></tr>
-          <tr><td contenteditable="true">Mango seed butter (Mangifera Indica)</td><td contenteditable="true">8%</td><td contenteditable="true">Emollient · conditioning</td></tr>
-          <tr><td contenteditable="true">Colloidal oat flour (Avena Sativa)</td><td contenteditable="true">7%</td><td contenteditable="true">Soothing · calming</td></tr>
-          <tr><td contenteditable="true">Jojoba oil (Simmondsia Chinensis)</td><td contenteditable="true">5%</td><td contenteditable="true">Liquid wax ester</td></tr>
-          <tr><td contenteditable="true">Meadowfoam seed oil (Limnanthes Alba)</td><td contenteditable="true">4%</td><td contenteditable="true">Oxidative stability</td></tr>
-          <tr><td contenteditable="true">Pink Himalayan salt (Sodium Chloride)</td><td contenteditable="true">4%</td><td contenteditable="true">Texture variation</td></tr>
-          <tr><td contenteditable="true">Ghassoul clay</td><td contenteditable="true">3%</td><td contenteditable="true">Detoxifying clay · mineral-rich</td></tr>
-          <tr><td contenteditable="true">Rosehip seed oil (Rosa Canina)</td><td contenteditable="true">2%</td><td contenteditable="true">Linoleic-rich oil</td></tr>
-          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">2%</td><td contenteditable="true">Texture · slip</td></tr>
-          <tr><td contenteditable="true">Squalane (olive-derived)</td><td contenteditable="true">2%</td><td contenteditable="true">Lightweight emollient</td></tr>
-          <tr><td contenteditable="true">Rosemary CO2 extract</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant · preservation</td></tr>
-          <tr><td contenteditable="true">Tocopherol (Vitamin E, mixed)</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant</td></tr>
-          <tr><td contenteditable="true">Ember EO blend (Amyris/Vetiver/Frankincense)</td><td contenteditable="true">0.5%</td><td contenteditable="true">50% Amyris · 30% Vetiver · 20% Frankincense</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-ember-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="suppliers" data-page="suppliers"><h2 contenteditable="true">Suppliers</h2>
+      <div class="danger" contenteditable="true">OI-001: MOQ CONFLICT — tallow supplier ($200 vs $250 conflicting docs) — confirm in writing before ordering.</div>
+      <table class="sortable editable-table" data-table="suppliers-table"><thead><tr><th>Supplier</th><th>Category</th><th>MOQ</th><th>Lead time</th><th>Status</th><th>Contact</th><th>Notes</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">Tallow Supplier</td><td contenteditable="true">Grass-fed beef tallow</td><td contenteditable="true">⚠️ CONFIRM MOQ</td><td contenteditable="true">2–4 weeks</td><td contenteditable="true">Pending</td><td contenteditable="true">[add contact]</td><td contenteditable="true">Local butcher Meridian/Nampa or Fatworks Amazon</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Bulk Apothecary</td><td contenteditable="true">Oils/butters/minerals</td><td contenteditable="true">confirm per item</td><td contenteditable="true">3–5 days</td><td contenteditable="true">Pending</td><td contenteditable="true">bulkapothecary.com</td><td contenteditable="true">—</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Mountain Rose Herbs</td><td contenteditable="true">Botanicals/oils/extracts</td><td contenteditable="true">confirm per item</td><td contenteditable="true">5–7 days</td><td contenteditable="true">Pending</td><td contenteditable="true">mountainroseherbs.com</td><td contenteditable="true">—</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">Plant Therapy</td><td contenteditable="true">Essential oils</td><td contenteditable="true">confirm per item</td><td contenteditable="true">3–5 days</td><td contenteditable="true">Pending</td><td contenteditable="true">planttherapy.com</td><td contenteditable="true">—</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">StickerMule</td><td contenteditable="true">Labels</td><td contenteditable="true">per run</td><td contenteditable="true">7–10 days</td><td contenteditable="true">N/A</td><td contenteditable="true">stickermule.com</td><td contenteditable="true">—</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="suppliers-table" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="suppliers-table" contenteditable="true">+ Add Column</button></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- POLISH GROVE -->
-  <div class="tab-pane" id="ftab-grove">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Refining Body Polish — Grove</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-grove">Ingredients: Sucrose, Tallow, Maris Sal, Mangifera Indica (Mango) Seed Butter, Avena Sativa (Oat) Kernel Flour, Simmondsia Chinensis (Jojoba) Seed Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Ghassoul, Rosa Canina Seed Oil, Maranta Arundinacea Root Powder, Squalane, Rosmarinus Officinalis (Rosemary) Leaf Extract, Vanilla Planifolia Fruit Extract, Tocopherol, Amyris Balsamifera Bark Oil, Elettaria Cardamomum Seed Oil, Santalum Album Oil.</div>
-      <button class="inci-copy" onclick="copyEl('inci-grove',this)">Copy</button>
-    </div>
-    <div class="section-label">Scent Profile</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
-      Vanilla oleoresin · Cardamom · Sandalwood<br>
-      EO blend at 0.5% total: Sandalwood 60% · Cardamom 25% · Vanilla oleoresin 15%
-    </div>
-    <div class="section-label">Formula Percentages (base same as Ember)</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-grove-pct">
-        <thead><tr><th onclick="sortTable('tbl-grove-pct',0)">Ingredient</th><th onclick="sortTable('tbl-grove-pct',1)">%</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Cane sugar (Sucrose)</td><td contenteditable="true">41%</td><td contenteditable="true">Primary exfoliant</td></tr>
-          <tr><td contenteditable="true">Tallow</td><td contenteditable="true">10%</td><td contenteditable="true">Skin-compatible lipid</td></tr>
-          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">9%</td><td contenteditable="true">Secondary exfoliant</td></tr>
-          <tr><td contenteditable="true">Mango seed butter</td><td contenteditable="true">8%</td><td contenteditable="true">Emollient</td></tr>
-          <tr><td contenteditable="true">Colloidal oat flour</td><td contenteditable="true">7%</td><td contenteditable="true">Soothing</td></tr>
-          <tr><td contenteditable="true">Jojoba oil</td><td contenteditable="true">5%</td><td contenteditable="true">Liquid wax ester</td></tr>
-          <tr><td contenteditable="true">Meadowfoam seed oil</td><td contenteditable="true">4%</td><td contenteditable="true">Oxidative stability</td></tr>
-          <tr><td contenteditable="true">Pink Himalayan salt</td><td contenteditable="true">4%</td><td contenteditable="true">Texture variation</td></tr>
-          <tr><td contenteditable="true">Ghassoul clay</td><td contenteditable="true">3%</td><td contenteditable="true">Detoxifying</td></tr>
-          <tr><td contenteditable="true">Rosehip seed oil</td><td contenteditable="true">2%</td><td contenteditable="true">Linoleic-rich</td></tr>
-          <tr><td contenteditable="true">Arrowroot powder</td><td contenteditable="true">2%</td><td contenteditable="true">Texture</td></tr>
-          <tr><td contenteditable="true">Squalane</td><td contenteditable="true">2%</td><td contenteditable="true">Lightweight emollient</td></tr>
-          <tr><td contenteditable="true">Rosemary CO2 extract</td><td contenteditable="true">1%</td><td contenteditable="true">Antioxidant</td></tr>
-          <tr><td contenteditable="true">Vanilla Planifolia Fruit Extract</td><td contenteditable="true">0.5%</td><td contenteditable="true">INCI name for vanilla oleoresin</td></tr>
-          <tr><td contenteditable="true">Tocopherol (Vitamin E)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Antioxidant</td></tr>
-          <tr><td contenteditable="true">Grove EO blend (Sandalwood/Cardamom/Vanilla)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Sandalwood 60% · Cardamom 25% · Vanilla oleoresin 15%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-grove-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="inventory" data-page="inventory"><h2 contenteditable="true">Inventory</h2><div class="warn" contenteditable="true">Watch-out: Crème 4oz and Soak Bare have 3 sellable each.</div>
+      <table class="sortable editable-table" data-table="inventory-table"><thead><tr><th>SKU</th><th>On hand</th><th>Bundle alloc</th><th>Buffer</th><th>Sellable</th><th>Notes</th><th>Remove</th></tr></thead><tbody></tbody></table>
+      <div class="table-tools"><button class="btn tiny add-row" data-table="inventory-table" contenteditable="true">+ Add Row</button><button class="btn tiny add-col" data-table="inventory-table" contenteditable="true">+ Add Column</button></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- SOAK BARE -->
-  <div class="tab-pane" id="ftab-soak-bare">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Mineral &amp; Oat Soak — Bare</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-soak-bare">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract.</div>
-      <button class="inci-copy" onclick="copyEl('inci-soak-bare',this)">Copy</button>
-    </div>
-    <div class="callout c-warn" contenteditable="true">
-      <strong>Allergen statement required on label:</strong> Contains goat milk.
-    </div>
-    <div class="section-label">Formula Percentages</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-soak-bare-pct">
-        <thead><tr><th onclick="sortTable('tbl-soak-bare-pct',0)">Ingredient</th><th onclick="sortTable('tbl-soak-bare-pct',1)">%</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Magnesium chloride</td><td contenteditable="true">30%</td><td contenteditable="true">Primary mineral · muscle recovery</td></tr>
-          <tr><td contenteditable="true">Colloidal oat flour (Avena Sativa)</td><td contenteditable="true">23%</td><td contenteditable="true">Soothing · milky water</td></tr>
-          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">20%</td><td contenteditable="true">Mineral-rich salt</td></tr>
-          <tr><td contenteditable="true">Epsom salt (Magnesium Sulfate)</td><td contenteditable="true">5%</td><td contenteditable="true">Supplementary mineral</td></tr>
-          <tr><td contenteditable="true">Pink Himalayan salt (Sodium Chloride)</td><td contenteditable="true">5%</td><td contenteditable="true">Visual interest · trace minerals</td></tr>
-          <tr><td contenteditable="true">Goat milk powder (Capra Hircus)</td><td contenteditable="true">3%</td><td contenteditable="true">Lactic acid · conditioning · ALLERGEN</td></tr>
-          <tr><td contenteditable="true">Sodium bicarbonate</td><td contenteditable="true">2%</td><td contenteditable="true">pH buffer · softening</td></tr>
-          <tr><td contenteditable="true">Arrowroot powder (Maranta Arundinacea)</td><td contenteditable="true">1%</td><td contenteditable="true">Flow aid · anti-caking</td></tr>
-          <tr><td contenteditable="true">Chamomile extract (Chamomilla Recutita)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Soothing · anti-inflammatory</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-soak-bare-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="label-packaging" data-page="label-packaging"><h2 contenteditable="true">Label &amp; Packaging</h2>
+      <p contenteditable="true">Includes compliance checklist, label status, and packaging specs per SKU.</p>
+      <table class="sortable editable-table" data-table="packaging-specs"><thead><tr><th>SKU</th><th>container</th><th>lid/closure</th><th>size</th><th>supplier</th><th>MOQ</th><th>unit cost</th><th>notes</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Frosted glass jar</td><td contenteditable="true">58mm black lid</td><td contenteditable="true">2oz</td><td contenteditable="true">C&amp;P/SKS</td><td contenteditable="true">50</td><td contenteditable="true">1.35</td><td contenteditable="true">Check OOS risk</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="section" data-attach="label-packaging"></div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- SOAK DRIFT -->
-  <div class="tab-pane" id="ftab-soak-drift">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Mineral &amp; Oat Soak — Drift</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-soak-drift">Ingredients: Magnesium Chloride, Maris Sal, Avena Sativa (Oat) Kernel Flour, Sodium Chloride, Magnesium Sulfate, Capra Hircus (Goat) Milk Powder, Sodium Bicarbonate, Maranta Arundinacea Root Powder, Chamomilla Recutita (Matricaria) Flower Extract, Lavandula Angustifolia (Lavender) Oil, Eucalyptus Globulus Leaf Oil, Citrus Aurantium Bergamia (Bergamot) Peel Oil, Anthemis Nobilis Flower Oil.</div>
-      <button class="inci-copy" onclick="copyEl('inci-soak-drift',this)">Copy</button>
-    </div>
-    <div class="callout c-warn" contenteditable="true">
-      <strong>Allergen statement required on label:</strong> Contains goat milk.
-    </div>
-    <div class="section-label">Scent Profile</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
-      Lavender · Bergamot FCF · Eucalyptus · Roman chamomile<br>
-      EO blend at 0.5% total: Lavender 60% · Bergamot FCF 25% · Eucalyptus 10% · Roman chamomile 5%<br>
-      Note: Bergamot is FCF (furanocoumarin-free) — safe for rinse-off applications.
-    </div>
-    <div class="section-label">Formula Percentages (base same as Bare)</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-soak-drift-pct">
-        <thead><tr><th onclick="sortTable('tbl-soak-drift-pct',0)">Ingredient</th><th onclick="sortTable('tbl-soak-drift-pct',1)">%</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Magnesium chloride</td><td contenteditable="true">30%</td><td contenteditable="true">Primary mineral</td></tr>
-          <tr><td contenteditable="true">Colloidal oat flour</td><td contenteditable="true">23%</td><td contenteditable="true">Soothing</td></tr>
-          <tr><td contenteditable="true">Dead Sea salt (Maris Sal)</td><td contenteditable="true">20%</td><td contenteditable="true">Mineral-rich</td></tr>
-          <tr><td contenteditable="true">Epsom salt</td><td contenteditable="true">5%</td><td contenteditable="true">Supplementary mineral</td></tr>
-          <tr><td contenteditable="true">Pink Himalayan salt</td><td contenteditable="true">5%</td><td contenteditable="true">Visual · trace minerals</td></tr>
-          <tr><td contenteditable="true">Goat milk powder</td><td contenteditable="true">3%</td><td contenteditable="true">ALLERGEN</td></tr>
-          <tr><td contenteditable="true">Sodium bicarbonate</td><td contenteditable="true">2%</td><td contenteditable="true">pH buffer</td></tr>
-          <tr><td contenteditable="true">Arrowroot powder</td><td contenteditable="true">1%</td><td contenteditable="true">Anti-caking</td></tr>
-          <tr><td contenteditable="true">Chamomile extract</td><td contenteditable="true">0.5%</td><td contenteditable="true">Soothing</td></tr>
-          <tr><td contenteditable="true">Drift EO blend (Lavender/Bergamot FCF/Eucalyptus/Roman chamomile)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Lavender 60% · Bergamot FCF 25% · Eucalyptus 10% · Roman chamomile 5%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-soak-drift-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="shipping" data-page="shipping"><h2 contenteditable="true">Shipping Calculator</h2>
+      <div class="toolbar"><label contenteditable="true">Ship from</label><input id="shipFrom" value="Meridian, ID 83642"><label contenteditable="true">Free shipping threshold</label><input id="freeShip" value="75"></div>
+      <table class="sortable editable-table" data-table="package-builder"><thead><tr><th>SKU</th><th>Packed Weight oz</th><th>Qty</th><th>Line Weight</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">Crème 2oz</td><td contenteditable="true">2.5</td><td contenteditable="true">1</td><td class="line-weight" contenteditable="true">2.5</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">Polish</td><td contenteditable="true">10</td><td contenteditable="true">1</td><td class="line-weight" contenteditable="true">10</td><td class="row-del">✕</td></tr></tbody></table>
+      <table class="sortable editable-table" data-table="rates"><thead><tr><th>Service</th><th>Rate</th><th>ETA</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">USPS Ground Advantage</td><td contenteditable="true">8.50</td><td contenteditable="true">2-5 days</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">Priority Mail</td><td contenteditable="true">11.75</td><td contenteditable="true">1-3 days</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">Priority Mail Medium</td><td contenteditable="true">16.25</td><td contenteditable="true">1-3 days</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="card" contenteditable="true">Packaging cost calculator: poly mailer + box + tissue + insert (editable).</div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- BAR BARE -->
-  <div class="tab-pane" id="ftab-bar-bare">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Lipid + Milk Cleansing Bar — Bare</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-bar-bare">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin.</div>
-      <button class="inci-copy" onclick="copyEl('inci-bar-bare',this)">Copy</button>
-    </div>
-    <div class="callout c-warn" contenteditable="true">
-      <strong>Allergen statements required on label:</strong> Contains goat milk. Contains honey.
-    </div>
-    <div class="section-label">Formula — Oil Phase</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-bar-bare-pct">
-        <thead><tr><th onclick="sortTable('tbl-bar-bare-pct',0)">Ingredient</th><th onclick="sortTable('tbl-bar-bare-pct',1)">% of oil weight</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Tallow (grass-fed) → Sodium Tallowate</td><td contenteditable="true">45.7%</td><td contenteditable="true">Hard bar · rich lather · barrier lipids</td></tr>
-          <tr><td contenteditable="true">Olive oil pomace → Sodium Olivate</td><td contenteditable="true">28.6%</td><td contenteditable="true">Conditioning · classic soapmaking oil</td></tr>
-          <tr><td contenteditable="true">Coconut oil 76° refined → Sodium Cocoate</td><td contenteditable="true">11.4%</td><td contenteditable="true">Lather · cleansing</td></tr>
-          <tr><td contenteditable="true">Mango seed butter → (in Sodium Olivate/Tallowate)</td><td contenteditable="true">8.6%</td><td contenteditable="true">Conditioning · emollient</td></tr>
-          <tr><td contenteditable="true">Castor oil → Sodium Castorate</td><td contenteditable="true">5.7%</td><td contenteditable="true">Lather boost · conditioning</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="section-label">Process Notes</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">
-      Cold process. Superfat: 7%. Liquid: frozen goat milk at 38% of oil weight — freeze solid before adding lye.<br>
-      Additives: Colloidal oat 1 tsp per lb of oils · Raw honey 1 tsp per lb of oils (add at light trace).<br>
-      Cure: 42 days minimum. Lye: NaOH (sodium hydroxide) 100% pure. Use lye calculator before every batch.
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-bar-bare-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="launch" data-page="launch"><h2 contenteditable="true">Launch Planning</h2>
+      <p contenteditable="true">Launch date (internal only): August 31, 2026</p>
+      <details class="collapsible" open><summary contenteditable="true">Labels</summary><div class="card" contenteditable="true">Outcome: all labels approved. Window: now to Aug 20, 2026. Checklist editable.</div></details>
+      <details class="collapsible"><summary contenteditable="true">Purchasing</summary><div class="card" contenteditable="true">Outcome: all raw materials and packaging in stock.</div></details>
+      <details class="collapsible"><summary contenteditable="true">Production</summary><div class="card" contenteditable="true">Outcome: all batches complete and cured where needed.</div></details>
+      <details class="collapsible"><summary contenteditable="true">Commerce / Launch</summary><div class="card" contenteditable="true">Outcome: Shopify live, Klaviyo active, QA complete.</div></details>
+      <div class="danger" contenteditable="true">Hard blockers: OI-001 MOQ conflict and OI-003 bundle cap pressure.</div>
+      <div class="card" contenteditable="true">Daily operating rules: Calm pace, no shortcuts, verify every lot code, COA before first batch.</div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-  <!-- BAR SOLACE -->
-  <div class="tab-pane" id="ftab-bar-solace">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <h3>Lipid + Milk Cleansing Bar — Solace</h3>
-      <span class="p-locked">⚿ Locked</span>
-    </div>
-    <div class="section-label" style="margin-top:0">INCI String</div>
-    <div class="inci-wrap">
-      <div class="inci-block" contenteditable="true" id="inci-bar-solace">Ingredients: Sodium Tallowate, Sodium Olivate, Sodium Cocoate, Sodium Castorate, Capra Hircus (Goat) Milk, Avena Sativa (Oat) Kernel Flour, Mel (Honey), Glycerin, Anthemis Nobilis Flower Extract, Vanilla Planifolia Fruit Extract, Santalum Album Oil.</div>
-      <button class="inci-copy" onclick="copyEl('inci-bar-solace',this)">Copy</button>
-    </div>
-    <div class="callout c-warn" contenteditable="true">
-      <strong>Allergen statements required on label:</strong> Contains goat milk. Contains honey.
-    </div>
-    <div class="section-label">Scent Profile</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;margin-bottom:12px">
-      Roman chamomile CO2 · Vanilla oleoresin · Sandalwood<br>
-      EO blend at 0.5% of oil weight: Roman chamomile CO2 35% · Vanilla oleoresin 40% · Sandalwood 25%
-    </div>
-    <div class="section-label">Formula — Oil Phase (same base as Bare)</div>
-    <div class="tbl-wrap">
-      <table class="formula-tbl" id="tbl-bar-solace-pct">
-        <thead><tr><th onclick="sortTable('tbl-bar-solace-pct',0)">Ingredient</th><th onclick="sortTable('tbl-bar-solace-pct',1)">% of oil weight</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td contenteditable="true">Tallow (grass-fed) → Sodium Tallowate</td><td contenteditable="true">45.7%</td><td contenteditable="true">Hard bar · barrier lipids</td></tr>
-          <tr><td contenteditable="true">Olive oil pomace → Sodium Olivate</td><td contenteditable="true">28.6%</td><td contenteditable="true">Conditioning</td></tr>
-          <tr><td contenteditable="true">Coconut oil 76° refined → Sodium Cocoate</td><td contenteditable="true">11.4%</td><td contenteditable="true">Lather</td></tr>
-          <tr><td contenteditable="true">Mango seed butter</td><td contenteditable="true">8.6%</td><td contenteditable="true">Emollient</td></tr>
-          <tr><td contenteditable="true">Castor oil → Sodium Castorate</td><td contenteditable="true">5.7%</td><td contenteditable="true">Lather boost</td></tr>
-          <tr><td contenteditable="true">Solace EO blend (add at light trace)</td><td contenteditable="true">0.5%</td><td contenteditable="true">Roman chamomile CO2 35% · Vanilla oleoresin 40% · Sandalwood 25%</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="section-label">Process Notes</div>
-    <div contenteditable="true" style="font-size:13px;color:var(--ink3);line-height:1.75;padding:8px 0">
-      Same process as Bare. Add EO blend at light trace. Roman chamomile CO2 is thick — pre-warm slightly before blending. Cure: 42 days minimum.
-    </div>
-    <div class="tbl-actions"><button class="btn" onclick="addRow('tbl-bar-solace-pct',['Ingredient','0%','Notes'])">+ Add Row</button></div>
-  </div>
+    <section class="page" id="content-calendar" data-page="content-calendar"><h2 contenteditable="true">Content Calendar</h2>
+      <div class="toolbar"><button class="btn tiny" id="addContentRow" contenteditable="true">+ Add Post</button><label contenteditable="true">Filter status</label><input id="contentStatusFilter" placeholder="e.g. Scheduled"><label contenteditable="true">Filter format</label><input id="contentFormatFilter" placeholder="e.g. Reel"></div>
+      <table class="sortable editable-table" data-table="content-all"><thead><tr><th>Date</th><th>Platform</th><th>Title</th><th>Format</th><th>Pillar</th><th>Status</th><th>Hook</th><th>Caption</th><th>CTA</th><th>Remove</th></tr></thead><tbody>
+      <tr draggable="true"><td contenteditable="true">2026-08-24</td><td contenteditable="true">IG + TikTok</td><td contenteditable="true">One week. The shop opens soon.</td><td contenteditable="true">Single post</td><td contenteditable="true">Elevated Body Care Ritual</td><td contenteditable="true">Scheduled</td><td contenteditable="true">One week.</td><td contenteditable="true">Quiet countdown begins.</td><td contenteditable="true">Early access + barrier tips → link in bio</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-08-26</td><td contenteditable="true">IG + TikTok</td><td contenteditable="true">Last batch before launch day</td><td contenteditable="true">Reel</td><td contenteditable="true">Small-Batch Craft &amp; BTS</td><td contenteditable="true">Idea</td><td contenteditable="true">This is the final launch batch.</td><td contenteditable="true">Measured, quiet making process.</td><td contenteditable="true">Join the list at oatearth.com/join</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-08-28</td><td contenteditable="true">IG</td><td contenteditable="true">Everything you need to know before we launch</td><td contenteditable="true">Carousel</td><td contenteditable="true">Ingredient Transparency</td><td contenteditable="true">Draft</td><td contenteditable="true">What matters before you buy.</td><td contenteditable="true">Product + ritual + shipping + early access.</td><td contenteditable="true">Early access + barrier tips → link in bio</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-08-30</td><td contenteditable="true">IG + TikTok</td><td contenteditable="true">Tomorrow. 🌿</td><td contenteditable="true">Single Post</td><td contenteditable="true">Skin Comfort &amp; Community</td><td contenteditable="true">Scheduled</td><td contenteditable="true">Tomorrow.</td><td contenteditable="true">Final reminder for waitlist.</td><td contenteditable="true">Join the list at oatearth.com/join</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-08-31</td><td contenteditable="true">IG + TikTok + Stories</td><td contenteditable="true">We're live. Oat &amp; Earth is open. 🌿</td><td contenteditable="true">Post + Stories + TikTok</td><td contenteditable="true">Elevated Body Care Ritual</td><td contenteditable="true">Scheduled</td><td contenteditable="true">We are live.</td><td contenteditable="true">Barrier-first ritual is available now.</td><td contenteditable="true">Shop now</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-09-01</td><td contenteditable="true">IG</td><td contenteditable="true">Meet the Lipid Barrier Crème</td><td contenteditable="true">Carousel</td><td contenteditable="true">Barrier Support &amp; Skin Education</td><td contenteditable="true">Idea</td><td contenteditable="true">Seal is the final step.</td><td contenteditable="true">Texture and ingredient story.</td><td contenteditable="true">Shop Crème</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-09-02</td><td contenteditable="true">IG + TikTok</td><td contenteditable="true">Meet the Body Polish — Ember &amp; Grove</td><td contenteditable="true">Post + Stories</td><td contenteditable="true">Ingredient Transparency</td><td contenteditable="true">Idea</td><td contenteditable="true">Two scent directions.</td><td contenteditable="true">How to refine without stripping.</td><td contenteditable="true">Shop Polish</td><td class="row-del">✕</td></tr>
+      <tr draggable="true"><td contenteditable="true">2026-09-06</td><td contenteditable="true">IG</td><td contenteditable="true">One week in. Thank you. 🌿</td><td contenteditable="true">Single post</td><td contenteditable="true">Skin Comfort &amp; Community</td><td contenteditable="true">Idea</td><td contenteditable="true">One week in.</td><td contenteditable="true">Gratitude and next steps.</td><td contenteditable="true">Share/refer</td><td class="row-del">✕</td></tr>
+      </tbody></table>
+      <details class="collapsible"><summary contenteditable="true">Content tools panel</summary><div class="card" contenteditable="true">Brand voice quick ref: quiet luxury, calm, editorial, minimal. Banned: anti-aging, miracle, toxin-free, flawless, fix your skin, fear hooks, trend language, medical claims. Ritual reminder: Prepare → Cleanse → Refine → Seal. Hashtag bank and templates editable.</div></details>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-</section>
+    <section class="page" id="email-sequences" data-page="email-sequences"><h2 contenteditable="true">Email Sequences</h2>
+      <details class="collapsible" open><summary contenteditable="true">Welcome Series — 5 emails over 10 days</summary><table class="sortable editable-table" data-table="welcome-emails"><thead><tr><th>Email</th><th>Subject</th><th>Timing</th><th>Goal</th><th>Body</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">1</td><td contenteditable="true">You're in. Here's what I made for you.</td><td contenteditable="true">Immediately</td><td contenteditable="true">Deliver lead magnet</td><td contenteditable="true">Welcome + delivery + next email teaser.</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">2</td><td contenteditable="true">The ingredient most brands won't touch</td><td contenteditable="true">Day 2</td><td contenteditable="true">Tallow education</td><td contenteditable="true">Calm education + sourcing values.</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">3</td><td contenteditable="true">Why your moisturizer might not be working</td><td contenteditable="true">Day 4</td><td contenteditable="true">Problem/solution</td><td contenteditable="true">Barrier context + ritual framing.</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">4</td><td contenteditable="true">Three products. One ritual. Here's how it works.</td><td contenteditable="true">Day 7</td><td contenteditable="true">Product intro</td><td contenteditable="true">Prepare → Cleanse → Refine → Seal.</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">5</td><td contenteditable="true">One thing I want to know about you</td><td contenteditable="true">Day 10</td><td contenteditable="true">Segmentation</td><td contenteditable="true">Preference question + CTA.</td><td class="row-del">✕</td></tr></tbody></table></details>
+      <details class="collapsible"><summary contenteditable="true">Pre-Launch Nurture — 2x/month Apr–Aug 2026</summary><div class="card" contenteditable="true">Broadcast cadence and monthly topics.</div></details>
+      <details class="collapsible"><summary contenteditable="true">Launch Week — 7 emails</summary><table class="sortable editable-table" data-table="launch-emails"><thead><tr><th>Date</th><th>Subject</th><th>Goal</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">2026-08-30</td><td contenteditable="true">Tomorrow. Your early access link is here. 🌿</td><td contenteditable="true">Deliver 24hr early access</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">2026-08-31</td><td contenteditable="true">We're live. 🌿</td><td contenteditable="true">Public launch</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">2026-09-03</td><td contenteditable="true">Still deciding? Here's what I'd tell you.</td><td contenteditable="true">Objection handling</td><td class="row-del">✕</td></tr></tbody></table></details>
+      <details class="collapsible"><summary contenteditable="true">Post-Purchase — 5 emails / 45 days</summary><div class="card" contenteditable="true">Triggered by Shopify order.</div></details>
+      <details class="collapsible"><summary contenteditable="true">Win-Back — 2 emails / 60 days inactive</summary><div class="card" contenteditable="true">Nudge + value-based reminder.</div></details>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<!-- ════════════════════════════════════════════════════════
-     PLACEHOLDER PAGES (all other sections)
-════════════════════════════════════════════════════════ -->
+    <section class="page" id="shopify" data-page="shopify"><h2 contenteditable="true">Shopify Setup</h2>
+      <div class="grid-3"><div class="card" contenteditable="true">Plan paused at $1/mo</div><div class="card" contenteditable="true">Reactivate Aug 24</div><div class="card" contenteditable="true">Klaviyo not set up</div></div>
+      <table class="sortable editable-table" data-table="shopify-skus"><thead><tr><th>SKU</th><th>Listing</th><th>Metafields</th><th>Status</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">Ready</td><td contenteditable="true">PAO/allergens</td><td contenteditable="true">Draft</td><td class="row-del">✕</td></tr></tbody></table>
+      <table class="sortable editable-table" data-table="shopify-bundles"><thead><tr><th>Bundle SKU</th><th>Cap</th><th>FOUNDERS15 applies?</th><th>Status</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-BUNDLE-BARR-1</td><td contenteditable="true">9</td><td contenteditable="true">No</td><td contenteditable="true">Draft</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="card" contenteditable="true">Implementation checklist: store name, domain oatearth.com, payment gateway, shipping zones, tax settings, metafields, Klaviyo integration.</div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<section id="pg-emailplatform" class="page">
-  <div class="page-title">Email Platform</div>
-  <div class="page-sub">Klaviyo setup, integration status, and flows</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">Includes: platform recommendation, setup checklist, integration status, notes.</p></div>
-</section>
+    <section class="page" id="wholesale" data-page="wholesale"><h2 contenteditable="true">Wholesale</h2>
+      <table class="sortable editable-table" data-table="wholesale-pricing"><thead><tr><th>SKU</th><th>Retail</th><th>Wholesale</th><th>Target Margin</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OE-LBC-2OZ</td><td contenteditable="true">30</td><td contenteditable="true">15</td><td contenteditable="true">45%</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="card" contenteditable="true">Onboarding checklist + terms area.</div>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<section id="pg-formulacalc" class="page">
-  <div class="page-title">Formula Calculator</div>
-  <div class="page-sub">Calculate ingredient quantities for any batch size</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">Includes: dropdown product selector, batch size input, overage %, auto-calculated quantities table, cost per unit.</p></div>
-</section>
+    <section class="page" id="open-items" data-page="open-items"><h2 contenteditable="true">Open Items</h2>
+      <table class="sortable editable-table" data-table="open-items-table"><thead><tr><th>ID</th><th>Severity</th><th>Description</th><th>Status</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">OI-001</td><td contenteditable="true">CRITICAL</td><td contenteditable="true">MOQ conflict — tallow supplier ($200 vs $250)</td><td contenteditable="true">Active</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OI-002</td><td contenteditable="true">ACTIVE</td><td contenteditable="true">Margin targets not set</td><td contenteditable="true">Active</td><td class="row-del">✕</td></tr><tr draggable="true"><td contenteditable="true">OI-003</td><td contenteditable="true">ACTIVE</td><td contenteditable="true">Bundle cap pressure</td><td contenteditable="true">Active</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<section id="pg-batchcalc" class="page">
-  <div class="page-title">Batch Calculator</div>
-  <div class="page-sub">Plan production runs, lot codes, soap cure tracking</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
+    <section class="page" id="finance" data-page="finance"><h2 contenteditable="true">Finance</h2>
+      <div class="grid-3"><div class="card" contenteditable="true">Revenue target: $15,000 launch month</div><div class="card" contenteditable="true">Expense budget: $3,000–$5,000</div><div class="card" contenteditable="true">Cash runway: editable</div></div>
+      <table class="sortable editable-table" data-table="finance-revenue"><thead><tr><th>Date</th><th>Channel</th><th>Amount</th><th>Notes</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">2026-08-31</td><td contenteditable="true">Shopify DTC</td><td contenteditable="true">0</td><td contenteditable="true">Launch day</td><td class="row-del">✕</td></tr></tbody></table>
+      <table class="sortable editable-table" data-table="finance-expense"><thead><tr><th>Date</th><th>Vendor</th><th>Amount</th><th>Category</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">2026-04-17</td><td contenteditable="true">StickerMule</td><td contenteditable="true">0</td><td contenteditable="true">Labels</td><td class="row-del">✕</td></tr></tbody></table>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<section id="pg-labelcomp" class="page">
-  <div class="page-title">Labels &amp; Compliance</div>
-  <div class="page-sub">10-item label checklist, per-SKU status, QC sign-off</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
+    <section class="page" id="brand-voice" data-page="brand-voice"><h2 contenteditable="true">Brand &amp; Voice</h2>
+      <div class="card" contenteditable="true">Oat &amp; Earth — Founder Ashley (Meridian, Idaho). Tagline: Barrier-first. Tallow-centered. Small batch. Ritual: Prepare → Cleanse → Refine → Seal.</div>
+      <div class="card" contenteditable="true">Tone: Quiet luxury. Calm. Editorial. Minimal. No hype. No exclamation points. Short paragraphs. High whitespace. Sensory over technical.</div>
+      <div class="warn" contenteditable="true">Banned: anti-aging, miracle, toxin-free, flawless, fix your skin, fear hooks, trend language, medical claims.</div>
+      <div class="grid-3">
+        <div class="card" style="background:#F7F4EF" contenteditable="true">Cream #F7F4EF</div>
+        <div class="card" style="background:#EFE9E0" contenteditable="true">Oat #EFE9E0</div>
+        <div class="card" style="background:#6b7c5a;color:#fff" contenteditable="true">Olive #6b7c5a</div>
+        <div class="card" style="background:#8a9e7a;color:#fff" contenteditable="true">Sage #8a9e7a</div>
+        <div class="card" style="background:#2a2520;color:#fff" contenteditable="true">Charcoal #2a2520</div>
+        <div class="card" style="background:#8a6c3e;color:#fff" contenteditable="true">Gold #8a6c3e</div>
+      </div>
+      <p contenteditable="true">Instagram: @oat.and.earth</p>
+      <div class="bottom-tools"><button class="btn tiny universal-add" data-type="table" contenteditable="true">+ Add Table</button><button class="btn tiny universal-add" data-type="checklist" contenteditable="true">+ Add Checklist</button><button class="btn tiny universal-add" data-type="text" contenteditable="true">+ Add Text Block</button><button class="btn tiny universal-add" data-type="callout" contenteditable="true">+ Add Callout</button><button class="btn tiny universal-add" data-type="divider" contenteditable="true">+ Add Divider</button><button class="btn tiny universal-add" data-type="note" contenteditable="true">+ Add Note</button></div>
+    </section>
 
-<section id="pg-cogs" class="page">
-  <div class="page-title">COGS Sheet</div>
-  <div class="page-sub">Cost of goods, DTC margin, wholesale margin</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div><p style="font-size:13px;color:var(--ink4)">OI-002 — margin targets must be set before this page is meaningful.</p></div>
-</section>
+    <footer contenteditable="true">Oat &amp; Earth OS · Internal Use Only</footer>
+  </main>
+</div>
 
-<section id="pg-pricing" class="page">
-  <div class="page-title">Pricing &amp; Quantities</div>
-  <div class="page-sub">Launch inventory — on-hand, bundle allocation, sellable units</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-purchaselist" class="page">
-  <div class="page-title">Purchase List</div>
-  <div class="page-sub">Phased purchasing across all phases</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-production" class="page">
-  <div class="page-title">Production &amp; Batches</div>
-  <div class="page-sub">SOP status, batch log, production run tracker</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-suppliers" class="page">
-  <div class="page-title">Suppliers</div>
-  <div class="page-sub">Vendor directory, MOQ, lead times, COA status</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-inventory" class="page">
-  <div class="page-title">Inventory</div>
-  <div class="page-sub">Launch batch inventory — on-hand, allocated, sellable</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-labelpack" class="page">
-  <div class="page-title">Label &amp; Packaging</div>
-  <div class="page-sub">Packaging specs, label status, attachment area</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-shipping" class="page">
-  <div class="page-title">Shipping Calculator</div>
-  <div class="page-sub">Rate estimator, packed weights, free shipping threshold</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-launch" class="page">
-  <div class="page-title">Launch Planning</div>
-  <div class="page-sub">Phase timeline, checklist, hard blockers — internal only</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-contentcal" class="page">
-  <div class="page-title">Content Calendar</div>
-  <div class="page-sub">IG · TikTok · Pinterest — launch window and beyond</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-emailseq" class="page">
-  <div class="page-title">Email Sequences</div>
-  <div class="page-sub">Welcome, pre-launch, launch week, post-purchase, win-back</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-shopify" class="page">
-  <div class="page-title">Shopify Setup</div>
-  <div class="page-sub">oatearth.com — products, bundles, Klaviyo, inventory settings</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-wholesale" class="page">
-  <div class="page-title">Wholesale</div>
-  <div class="page-sub">Pricing, target accounts, onboarding, terms</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-openitems" class="page">
-  <div class="page-title">Open Items</div>
-  <div class="page-sub">Full issue log — see also Audit &amp; Conflicts</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-finance" class="page">
-  <div class="page-title">Finance</div>
-  <div class="page-sub">Revenue tracker, expense log, launch budget</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-<section id="pg-brand" class="page">
-  <div class="page-title">Brand &amp; Voice</div>
-  <div class="page-sub">Identity, tone rules, banned phrases, color palette, ritual</div>
-  <div class="placeholder-page"><div class="coming">Coming in Part 2</div></div>
-</section>
-
-</main>
-
-<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
 <script>
-'use strict';
-
-/* ──────────────────────────────────────────
-   STORAGE
-────────────────────────────────────────── */
-const SK = 'oe_os_v1';
-let saveTimer = null;
-
-function scheduleSave() {
-  const pill = document.getElementById('save-pill');
-  if (pill) { pill.textContent = 'Saving…'; pill.className = 'saving'; }
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(commitSave, 700);
-}
-
-function commitSave() {
-  try {
-    const out = {};
-    // contenteditable elements
-    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
-      const key = el.id ? 'ce::' + el.id : 'ce::idx::' + i;
-      out[key] = el.innerHTML;
-    });
-    // checkboxes
-    document.querySelectorAll('input[type=checkbox]').forEach((cb, i) => {
-      out['cb::' + i] = cb.checked;
-    });
-    localStorage.setItem(SK, JSON.stringify(out));
-    const pill = document.getElementById('save-pill');
-    if (pill) { pill.textContent = 'Saved ✓'; pill.className = 'saved'; }
-  } catch(e) {
-    const pill = document.getElementById('save-pill');
-    if (pill) { pill.textContent = 'Error'; }
-    console.error('Save error:', e);
-  }
-}
-
-function loadSaved() {
-  try {
-    const raw = localStorage.getItem(SK);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
-      const key = el.id ? 'ce::' + el.id : 'ce::idx::' + i;
-      if (data[key] !== undefined) el.innerHTML = data[key];
-    });
-    document.querySelectorAll('input[type=checkbox]').forEach((cb, i) => {
-      if (data['cb::' + i] !== undefined) {
-        cb.checked = data['cb::' + i];
-        const span = cb.nextElementSibling;
-        if (span && cb.checked) span.classList.add('done');
-      }
-    });
-  } catch(e) {
-    console.error('Load error:', e);
-  }
-}
-
-// Wire autosave
-document.addEventListener('input', e => {
-  if (e.target.matches('[contenteditable], input, select, textarea')) scheduleSave();
-});
-document.addEventListener('change', e => {
-  if (e.target.matches('input[type=checkbox], select')) scheduleSave();
-});
-
-/* ──────────────────────────────────────────
-   EXPORT / IMPORT
-────────────────────────────────────────── */
-function dlFile(name, content, mime) {
-  const b = new Blob([content], {type: mime});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(b);
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-}
-
-function exportJSON() {
-  commitSave();
-  const raw = localStorage.getItem(SK) || '{}';
-  dlFile('oat_earth_os_' + today() + '.json', raw, 'application/json');
-}
-
-function exportHTML() {
-  commitSave();
-  const data = localStorage.getItem(SK) || '{}';
-  const src = document.documentElement.outerHTML;
-  const boot = `<script>(function(){try{localStorage.setItem(${JSON.stringify(SK)},${JSON.stringify(data)});}catch(e){}})();<\/script>`;
-  const out = src.replace('</body>', boot + '</body>');
-  dlFile('oat_earth_os_export_' + today() + '.html', out, 'text/html');
-}
-
-function importJSON() {
-  if (!confirm('Import will overwrite your current saved data. Continue?')) return;
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.json';
-  inp.onchange = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => {
-      try {
-        JSON.parse(ev.target.result); // validate
-        localStorage.setItem(SK, ev.target.result);
-        loadSaved();
-        alert('Import successful.');
-      } catch { alert('Invalid JSON file.'); }
-    };
-    r.readAsText(f);
+(() => {
+  const STORAGE_KEY = 'oe_os_v1';
+  const LAUNCH = new Date('2026-08-31T00:00:00');
+  const formulas = {
+    'Crème': [['Tallow',55],['Rosehip seed oil',10],['Meadowfoam seed oil',8],['Jojoba oil',7],['Squalane',5],['Calendula infused sunflower oil',5],['Borage seed oil',3],['Sea buckthorn CO2',2],['Beeswax',2],['Frankincense CO2 resin',1],['Arrowroot powder',1],['Tocopherol',0.5],['Vitamin E',0.5]],
+    'Polish Ember': [['Cane sugar',41],['Tallow',10],['Dead Sea salt',9],['Mango seed butter',8],['Colloidal oat flour',7],['Jojoba oil',5],['Meadowfoam seed oil',4],['Pink Himalayan salt',4],['Ghassoul clay',3],['Rosehip oil',2],['Squalane',2],['Rosemary CO2',1],['Arrowroot',2],['Tocopherol',0.5],['Vitamin E',0.5]],
+    'Polish Grove': [['Cane sugar',41],['Tallow',10],['Dead Sea salt',9],['Mango seed butter',8],['Colloidal oat flour',7],['Jojoba oil',5],['Meadowfoam seed oil',4],['Pink Himalayan salt',4],['Ghassoul clay',3],['Rosehip oil',2],['Squalane',2],['Rosemary CO2',1],['Arrowroot',2],['Tocopherol',0.5],['Vitamin E',0.5]],
+    'Soak Bare': [['Magnesium chloride',30],['Dead Sea salt',20],['Colloidal oat flour',23],['Pink Himalayan salt',5],['Epsom salt',5],['Goat milk powder',3],['Arrowroot',1],['Sodium bicarbonate',2],['Chamomile extract',0.5]],
+    'Soak Drift': [['Magnesium chloride',30],['Dead Sea salt',20],['Colloidal oat flour',23],['Pink Himalayan salt',5],['Epsom salt',5],['Goat milk powder',3],['Arrowroot',1],['Sodium bicarbonate',2],['Chamomile extract',0.5]],
+    'Bar Bare': [['Tallow',45.7],['Olive oil pomace',28.6],['Coconut oil 76° refined',11.4],['Mango seed butter',8.6],['Castor oil',5.7]],
+    'Bar Solace': [['Tallow',45.7],['Olive oil pomace',28.6],['Coconut oil 76° refined',11.4],['Mango seed butter',8.6],['Castor oil',5.7]],
   };
-  inp.click();
-}
 
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
+  const NAV_MODEL = [
+    {group:'COMMAND',items:[['◈','Dashboard','dashboard'],['⊛','Audit & Conflicts','audit'],['◉','Email Platform','email-platform']]},
+    {group:'PRODUCTS & FORMULAS',items:[['▪','SKU Master','sku-master'],['▪','Formulas & INCI','formulas-inci'],['▪','Formula Calculator','formula-calculator'],['▪','Batch Calculator','batch-calculator'],['▪','Labels & Compliance','labels-compliance']]},
+    {group:'OPERATIONS',items:[['▪','COGS Sheet','cogs'],['▪','Pricing & Quantities','pricing'],['▪','Purchase List','purchase-list'],['▪','Production & Batches','production'],['▪','Suppliers','suppliers'],['▪','Inventory','inventory'],['▪','Label & Packaging','label-packaging'],['▪','Shipping Calculator','shipping']]},
+    {group:'GROWTH',items:[['▪','Launch Planning','launch'],['▪','Content Calendar','content-calendar'],['▪','Email Sequences','email-sequences'],['▪','Shopify Setup','shopify'],['▪','Wholesale','wholesale']]},
+    {group:'ADMIN',items:[['▪','Open Items','open-items'],['▪','Finance','finance'],['▪','Brand & Voice','brand-voice']]},
+  ];
 
-/* ──────────────────────────────────────────
-   NAVIGATION
-────────────────────────────────────────── */
-function go(pageId) {
-  // Hide all pages
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  // Deactivate all nav items
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  // Show target
-  const pg = document.getElementById('pg-' + pageId);
-  if (pg) pg.classList.add('active');
-  // Highlight nav
-  const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-  if (nav) nav.classList.add('active');
-  window.scrollTo(0, 0);
-}
+  const savePill = document.getElementById('savePill');
+  let timer;
 
-function searchNav(q) {
-  const items = document.querySelectorAll('.nav-item');
-  if (!q.trim()) {
-    items.forEach(n => n.style.display = '');
-    return;
-  }
-  const lq = q.toLowerCase();
-  items.forEach(n => {
-    n.style.display = n.textContent.toLowerCase().includes(lq) ? '' : 'none';
-  });
-}
+  function setSaving(status){ savePill.textContent = status; }
+  function debounceSave(){ setSaving('Saving…'); clearTimeout(timer); timer=setTimeout(saveAll,700); }
 
-/* ──────────────────────────────────────────
-   TABS
-────────────────────────────────────────── */
-function switchTab(rowId, prefix, paneId, btn) {
-  // Deactivate all buttons in this row
-  document.getElementById(rowId).querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Hide all panes with this prefix
-  document.querySelectorAll(`[id^="${prefix}"]`).forEach(p => p.classList.remove('active'));
-  const pane = document.getElementById(prefix + paneId);
-  if (pane) pane.classList.add('active');
-}
-
-/* ──────────────────────────────────────────
-   TABLES — SORT / ADD / DELETE
-────────────────────────────────────────── */
-const _sortState = {};
-
-function sortTable(id, col) {
-  const t = document.getElementById(id);
-  if (!t) return;
-  const key = id + ':' + col;
-  const asc = _sortState[key] !== true;
-  _sortState[key] = asc;
-
-  // Update header classes
-  t.querySelectorAll('th').forEach((th, i) => {
-    th.classList.remove('sorted-asc','sorted-desc');
-    if (i === col) th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
-  });
-
-  const tbody = t.querySelector('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
-  rows.sort((a, b) => {
-    const ca = (a.cells[col]?.innerText || '').trim();
-    const cb = (b.cells[col]?.innerText || '').trim();
-    return asc ? ca.localeCompare(cb, undefined, {numeric:true}) : cb.localeCompare(ca, undefined, {numeric:true});
-  });
-  rows.forEach(r => tbody.appendChild(r));
-  scheduleSave();
-}
-
-function addRow(tableId, cells) {
-  const t = document.getElementById(tableId);
-  if (!t) return;
-  const tbody = t.querySelector('tbody');
-  const tr = document.createElement('tr');
-  cells.forEach(c => {
-    const td = document.createElement('td');
-    td.contentEditable = 'true';
-    td.innerHTML = c;
-    tr.appendChild(td);
-  });
-  // Delete button cell
-  const tdDel = document.createElement('td');
-  tdDel.innerHTML = '<button class="btn btn-del" onclick="delRow(this)">✕</button>';
-  tr.appendChild(tdDel);
-  tbody.appendChild(tr);
-  scheduleSave();
-}
-
-function delRow(btn) {
-  const row = btn.closest('tr');
-  if (row) { row.remove(); scheduleSave(); }
-}
-
-/* ──────────────────────────────────────────
-   CHECKLIST
-────────────────────────────────────────── */
-function toggleDone(cb) {
-  const span = cb.nextElementSibling;
-  if (span) span.classList.toggle('done', cb.checked);
-  scheduleSave();
-}
-
-function addCheckItem(listId) {
-  const ul = document.getElementById(listId);
-  if (!ul) return;
-  const li = document.createElement('li');
-  li.innerHTML = '<input type="checkbox" onchange="toggleDone(this)"><span class="item-text" contenteditable="true">New item — edit me</span>';
-  ul.appendChild(li);
-  const span = li.querySelector('[contenteditable]');
-  if (span) {
-    span.focus();
-    const range = document.createRange();
-    range.selectNodeContents(span);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-  }
-  scheduleSave();
-}
-
-/* ──────────────────────────────────────────
-   INCI COPY
-────────────────────────────────────────── */
-function copyEl(elId, btn) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-  const text = el.innerText;
-  navigator.clipboard.writeText(text)
-    .then(() => {
-      const orig = btn.textContent;
-      btn.textContent = 'Copied ✓';
-      setTimeout(() => btn.textContent = orig, 1800);
-    })
-    .catch(() => {
-      const sel = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      sel.removeAllRanges();
-      sel.addRange(range);
-      document.execCommand('copy');
-      sel.removeAllRanges();
+  function renderNav(){
+    const nav = document.getElementById('nav');
+    nav.innerHTML='';
+    const model = window.__navModel || JSON.parse(JSON.stringify(NAV_MODEL));
+    model.forEach((g,gi)=>{
+      const wrap = document.createElement('div'); wrap.className='nav-group';
+      const h = document.createElement('h4'); h.contentEditable = 'true'; h.textContent = g.group;
+      const gd = document.createElement('span'); gd.className='group-delete'; gd.textContent=' ✕'; gd.onclick=()=>{ model.splice(gi,1); window.__navModel=model; renderNav(); debounceSave();};
+      h.appendChild(gd); wrap.appendChild(h);
+      g.items.forEach((it,ii)=>{
+        const n = document.createElement('div'); n.className='nav-item'; n.dataset.page=it[2];
+        n.innerHTML = `<span><span contenteditable="true">${it[0]}</span> <span contenteditable="true">${it[1]}</span></span><span class="nav-delete">✕</span>`;
+        n.onclick=(e)=>{ if(e.target.classList.contains('nav-delete')) return; showPage(it[2]); };
+        n.querySelector('.nav-delete').onclick=(e)=>{ e.stopPropagation(); model[gi].items.splice(ii,1); window.__navModel=model; renderNav(); debounceSave(); };
+        wrap.appendChild(n);
+      });
+      const add = document.createElement('button'); add.className='btn tiny'; add.textContent='+ Add Item'; add.contentEditable='true'; add.onclick=()=>{ model[gi].items.push(['▪','New Item','dashboard']); window.__navModel=model; renderNav(); debounceSave(); };
+      wrap.appendChild(add);
+      nav.appendChild(wrap);
     });
-}
-
-/* ──────────────────────────────────────────
-   DASHBOARD INIT
-────────────────────────────────────────── */
-function initDash() {
-  const now = new Date();
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const h = now.getHours();
-  const greeting = h < 12 ? 'Good morning.' : h < 17 ? 'Good afternoon.' : 'Good evening.';
-  const greetEl = document.getElementById('dash-greeting');
-  if (greetEl) greetEl.textContent = greeting;
-  const dateEl = document.getElementById('dash-date');
-  if (dateEl) dateEl.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
-
-  // Days to launch
-  const launch = new Date('2026-08-31T00:00:00');
-  const diff = Math.ceil((launch - now) / 86400000);
-  const dtl = document.getElementById('days-launch');
-  if (dtl) {
-    dtl.textContent = diff > 0 ? diff : (diff === 0 ? 'Today' : 'Launched');
-    if (diff < 0) dtl.style.color = 'var(--green)';
-    else if (diff < 30) dtl.style.color = 'var(--red)';
-  }
-}
-
-/* ──────────────────────────────────────────
-   INIT
-────────────────────────────────────────── */
-window.addEventListener('DOMContentLoaded', () => {
-  initDash();
-  loadSaved();
-
-  // Re-init days to launch after loadSaved (in case it was overwritten)
-  const launch = new Date('2026-08-31T00:00:00');
-  const diff = Math.ceil((launch - new Date()) / 86400000);
-  const dtl = document.getElementById('days-launch');
-  if (dtl) {
-    dtl.textContent = diff > 0 ? diff : (diff === 0 ? 'Today' : 'Launched');
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===currentPage));
   }
 
-  // Re-wire checkboxes from saved state
-  document.querySelectorAll('.checklist input[type=checkbox]').forEach(cb => {
-    if (cb.checked) {
-      const span = cb.nextElementSibling;
-      if (span) span.classList.add('done');
-    }
-  });
-});
+  let currentPage='dashboard';
+  function showPage(id){
+    currentPage=id;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const target=document.getElementById(id); if(target) target.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.page===id));
+    debounceSave();
+  }
+
+  function makeTablesInteractive(){
+    document.querySelectorAll('table.sortable').forEach(table=>{
+      table.querySelectorAll('th').forEach((th,idx)=>{
+        th.onclick=()=>{
+          const tbody=table.tBodies[0];
+          const rows=[...tbody.rows];
+          const asc = !th.dataset.asc || th.dataset.asc==='0';
+          rows.sort((a,b)=>a.cells[idx].innerText.localeCompare(b.cells[idx].innerText, undefined, {numeric:true}));
+          if(!asc) rows.reverse();
+          th.dataset.asc = asc?'1':'0';
+          rows.forEach(r=>tbody.appendChild(r));
+          debounceSave();
+        };
+      });
+    });
+
+    document.querySelectorAll('.add-row').forEach(btn=>btn.onclick=()=>{
+      const t = document.querySelector(`[data-table="${btn.dataset.table}"] tbody`); if(!t) return;
+      const cols=t.parentElement.tHead.rows[0].cells.length;
+      const tr=document.createElement('tr'); tr.draggable=true;
+      for(let i=0;i<cols;i++){
+        const td=document.createElement('td');
+        if(i===cols-1){ td.className='row-del'; td.textContent='✕'; }
+        else { td.contentEditable='true'; td.textContent=''; }
+        tr.appendChild(td);
+      }
+      t.appendChild(tr); wireRowDelete(); wireDragRows(); debounceSave();
+    });
+
+    document.querySelectorAll('.add-col').forEach(btn=>btn.onclick=()=>{
+      const table = document.querySelector(`[data-table="${btn.dataset.table}"]`); if(!table) return;
+      const th=document.createElement('th'); th.contentEditable='true'; th.textContent='New Column'; table.tHead.rows[0].insertBefore(th, table.tHead.rows[0].lastElementChild);
+      [...table.tBodies[0].rows].forEach(r=>{ const td=document.createElement('td'); td.contentEditable='true'; td.textContent=''; r.insertBefore(td, r.lastElementChild); });
+      makeTablesInteractive(); debounceSave();
+    });
+  }
+
+  function wireRowDelete(){
+    document.querySelectorAll('.row-del').forEach(x=>{ x.style.display='inline'; x.onclick=()=>{ const tr=x.closest('tr'); if(tr) tr.remove(); debounceSave(); }; });
+  }
+
+  function wireLists(){
+    document.querySelectorAll('.add-list-item').forEach(btn=>btn.onclick=()=>{
+      const ul = document.querySelector(`.editable-list[data-list="${btn.dataset.target}"]`); if(!ul) return;
+      const li = document.createElement('li'); li.contentEditable='true'; li.innerHTML='New Item <span class="item-delete">✕</span>'; ul.appendChild(li); wireItemDelete(); wireDragList(); debounceSave();
+    });
+  }
+  function wireItemDelete(){ document.querySelectorAll('.item-delete').forEach(x=>{ x.style.display='inline'; x.onclick=(e)=>{ e.stopPropagation(); x.closest('li')?.remove(); debounceSave(); }; }); }
+
+  function wireDragRows(){
+    document.querySelectorAll('tbody tr[draggable="true"]').forEach(r=>{
+      r.ondragstart=(e)=>{ e.dataTransfer.setData('text/plain','x'); window.__dragRow=r; };
+      r.ondragover=(e)=>e.preventDefault();
+      r.ondrop=(e)=>{ e.preventDefault(); const d=window.__dragRow; if(!d||d===r) return; r.parentNode.insertBefore(d,r); debounceSave(); };
+    });
+  }
+  function wireDragList(){
+    document.querySelectorAll('.editable-list li').forEach(li=>{ li.draggable=true; li.ondragstart=()=>window.__dragLi=li; li.ondragover=(e)=>e.preventDefault(); li.ondrop=(e)=>{e.preventDefault(); if(window.__dragLi&&window.__dragLi!==li){ li.parentNode.insertBefore(window.__dragLi,li); debounceSave(); }}; });
+  }
+
+  function renderAttachments(){
+    document.querySelectorAll('[data-attach]').forEach(slot=>{
+      const key=slot.dataset.attach;
+      slot.innerHTML = `<div class="attachment-wrap" data-attach-wrap="${key}"><div class="attachment-head"><span contenteditable="true">Attachments</span><div><button class="btn tiny toggle-attach" contenteditable="true">Toggle</button> <label class="btn tiny" contenteditable="true">Upload<input type="file" class="attach-input" data-key="${key}" multiple accept=".png,.jpg,.jpeg,.gif,.pdf,.html,.csv,.doc,.docx,.xls,.xlsx" style="display:none"></label></div></div><div class="attachment-body" id="attach-body-${key}"></div></div>`;
+    });
+    document.querySelectorAll('.toggle-attach').forEach(b=>b.onclick=()=>b.closest('.attachment-wrap').classList.toggle('open'));
+    document.querySelectorAll('.attach-input').forEach(inp=>inp.onchange=async()=>{
+      const key=inp.dataset.key;
+      const files=[...inp.files];
+      const data=(window.__attachments?.[key]||[]);
+      for(const f of files){
+        const b64=await toBase64(f);
+        data.push({name:f.name,type:f.type,data:b64});
+      }
+      window.__attachments=window.__attachments||{}; window.__attachments[key]=data;
+      drawAttachmentList(key); debounceSave();
+    });
+    Object.keys(window.__attachments||{}).forEach(drawAttachmentList);
+  }
+  function drawAttachmentList(key){
+    const body=document.getElementById(`attach-body-${key}`); if(!body) return;
+    body.innerHTML='';
+    (window.__attachments[key]||[]).forEach((a,i)=>{
+      const div=document.createElement('div'); div.className='attach-item';
+      const isImg = /^image\//.test(a.type);
+      div.innerHTML = `${isImg?`<img src="${a.data}">`:''}<div contenteditable="true">${a.name}</div>${!isImg?`<a href="${a.data}" download="${a.name}" contenteditable="true">Download</a>`:''}<button class="btn tiny" contenteditable="true">✕</button>`;
+      div.querySelector('button').onclick=()=>{ window.__attachments[key].splice(i,1); drawAttachmentList(key); debounceSave(); };
+      body.appendChild(div);
+    });
+  }
+  function toBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+  function formulaCalc(){
+    const p=document.getElementById('formulaProduct').value;
+    const size=parseFloat(document.getElementById('formulaBatch').value||0);
+    const unit=document.getElementById('formulaUnit').value;
+    const over=(parseFloat(document.getElementById('formulaOverage').value||0)/100);
+    const gBase = unit==='oz' ? size*28.3495 : size;
+    const total = gBase*(1+over);
+    const body=document.querySelector('[data-table="formula-output"] tbody');
+    body.innerHTML='';
+    let cost=0;
+    (formulas[p]||[]).forEach(row=>{
+      const grams=(total*(row[1]/100));
+      const oz=grams/28.3495;
+      const costOz=0;
+      const totalCost=costOz*oz;
+      cost+=totalCost;
+      const tr=document.createElement('tr'); tr.draggable=true;
+      tr.innerHTML=`<td contenteditable="true">${row[0]}</td><td contenteditable="true">${row[1]}</td><td contenteditable="true">${grams.toFixed(2)}</td><td contenteditable="true">${oz.toFixed(2)}</td><td contenteditable="true">${costOz.toFixed(2)}</td><td contenteditable="true">${totalCost.toFixed(2)}</td><td class="row-del">✕</td>`;
+      body.appendChild(tr);
+    });
+    document.getElementById('sumWeight').textContent=total.toFixed(2)+' g';
+    document.getElementById('sumCost').textContent='$'+cost.toFixed(2);
+    document.getElementById('sumCPU').textContent='$0.00';
+    wireRowDelete(); wireDragRows(); debounceSave();
+  }
+
+  function recalcBatch(){
+    const d=(document.getElementById('soapBatchDate').value||'').replaceAll('-','');
+    document.querySelectorAll('[data-table="batch-input"] tbody tr').forEach(tr=>{
+      const sku=tr.cells[0].innerText.trim();
+      const units=parseFloat(tr.cells[1].innerText||0); const fill=parseFloat(tr.cells[2].innerText||0); const ov=parseFloat(tr.cells[3].innerText||0)/100;
+      tr.cells[4].innerText=(units*fill*(1+ov)).toFixed(2);
+      tr.cells[5].innerText=`${sku}-${d||'YYYYMMDD'}-001`;
+    });
+    const bd = new Date(document.getElementById('soapBatchDate').value||Date.now()); bd.setDate(bd.getDate()+42);
+    document.getElementById('cureDate').textContent = bd.toISOString().slice(0,10);
+    debounceSave();
+  }
+
+  function recalcCogs(){
+    const dtcTarget=parseFloat(document.getElementById('targetDtc').value||65);
+    const wsTarget=parseFloat(document.getElementById('targetWs').value||45);
+    document.querySelectorAll('[data-table="cogs-singles"] tbody tr').forEach(tr=>{
+      const retail=parseFloat(tr.cells[2].innerText||0), cogs=parseFloat(tr.cells[3].innerText||0);
+      const dtc=((retail-cogs)/retail)*100; const wsp=retail*0.5; const wsm=((wsp-cogs)/wsp)*100;
+      tr.cells[4].innerText=isFinite(dtc)?dtc.toFixed(1):'0'; tr.cells[5].innerText=wsp.toFixed(2); tr.cells[6].innerText=isFinite(wsm)?wsm.toFixed(1):'0';
+      tr.classList.toggle('stock-red', dtc<dtcTarget || wsm<wsTarget);
+      tr.classList.toggle('stock-green', dtc>=dtcTarget && wsm>=wsTarget);
+    });
+    debounceSave();
+  }
+
+  function colorSellable(){
+    document.querySelectorAll('.sellable').forEach(td=>{
+      const v=parseFloat(td.innerText||0); td.classList.remove('stock-red','stock-amber','stock-green');
+      if(v<5) td.classList.add('stock-red'); else if(v<=10) td.classList.add('stock-amber'); else td.classList.add('stock-green');
+    });
+  }
+
+  function buildInventoryFromPricing(){
+    const body=document.querySelector('[data-table="inventory-table"] tbody'); if(!body) return;
+    const rows=[...document.querySelectorAll('[data-table="pricing-singles"] tbody tr')];
+    body.innerHTML='';
+    rows.forEach(r=>{
+      const tr=document.createElement('tr'); tr.draggable=true;
+      tr.innerHTML=`<td contenteditable="true">${r.cells[0].innerText}</td><td contenteditable="true">${r.cells[5].innerText}</td><td contenteditable="true">${r.cells[6].innerText}</td><td contenteditable="true">${r.cells[7].innerText}</td><td class="sellable" contenteditable="true">${r.cells[8].innerText}</td><td contenteditable="true">Live from pricing</td><td class="row-del">✕</td>`;
+      body.appendChild(tr);
+    });
+    colorSellable(); wireRowDelete(); wireDragRows();
+  }
+
+  function saveAll(){
+    const data = {
+      html: document.body.innerHTML,
+      navModel: window.__navModel || NAV_MODEL,
+      attachments: window.__attachments || {},
+      currentPage,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    setSaving('Saved ✓');
+  }
+
+  function loadAll(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    try {
+      const d=JSON.parse(raw);
+      if(d && d.html){
+        const fresh = new DOMParser().parseFromString('<body>'+d.html+'</body>','text/html').body;
+        document.body.innerHTML=fresh.innerHTML;
+      }
+    } catch(e){ console.warn('load failed', e); }
+  }
+
+  function wireHeaderButtons(){
+    document.getElementById('exportJSON').onclick=()=>{ const blob=new Blob([JSON.stringify(localStorage,null,2)],{type:'application/json'}); dl(blob,'oe_os_backup.json'); };
+    document.getElementById('importJSONBtn').onclick=()=>document.getElementById('importJSONInput').click();
+    document.getElementById('importJSONInput').onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; if(!confirm('Import JSON and overwrite localStorage?')) return; const t=await f.text(); const obj=JSON.parse(t); Object.keys(obj).forEach(k=>localStorage.setItem(k,obj[k])); location.reload(); };
+
+    document.getElementById('exportHTML').onclick=()=>{
+      const clone=document.documentElement.outerHTML;
+      const boot = `<script>localStorage.setItem('${STORAGE_KEY}',${JSON.stringify(JSON.stringify(JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')))});<\/script>`;
+      const blob=new Blob([clone.replace('</body>', boot + '</body>')],{type:'text/html'}); dl(blob,'oat_earth_os_backup.html');
+    };
+    document.getElementById('importHTMLBtn').onclick=()=>document.getElementById('importHTMLInput').click();
+    document.getElementById('importHTMLInput').onchange=async(e)=>{ const f=e.target.files[0]; if(!f) return; if(!confirm('Import HTML backup data?')) return; const text=await f.text(); const m=text.match(/localStorage\.setItem\('oe_os_v1',(.*)\);/); if(m){ localStorage.setItem(STORAGE_KEY, JSON.parse(m[1])); location.reload(); } else alert('No backup data found'); };
+  }
+
+  function dl(blob,name){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+
+  function wireUniversalAdd(){
+    document.querySelectorAll('.universal-add').forEach(btn=>btn.onclick=()=>{
+      const page=btn.closest('.page');
+      if(btn.dataset.type==='divider'){ const hr=document.createElement('hr'); page.insertBefore(hr, btn.closest('.bottom-tools')); }
+      else if(btn.dataset.type==='text'){ const p=document.createElement('p'); p.contentEditable='true'; p.textContent='New text block'; page.insertBefore(p, btn.closest('.bottom-tools')); }
+      else if(btn.dataset.type==='note'){ const d=document.createElement('div'); d.className='card'; d.contentEditable='true'; d.textContent='New note'; page.insertBefore(d, btn.closest('.bottom-tools')); }
+      else if(btn.dataset.type==='callout'){ const d=document.createElement('div'); d.className='warn'; d.contentEditable='true'; d.textContent='New callout'; page.insertBefore(d, btn.closest('.bottom-tools')); }
+      else if(btn.dataset.type==='checklist'){ const ul=document.createElement('ul'); ul.className='editable-list'; ul.innerHTML='<li contenteditable="true">Checklist item <span class="item-delete">✕</span></li>'; page.insertBefore(ul, btn.closest('.bottom-tools')); wireItemDelete(); wireDragList(); }
+      else if(btn.dataset.type==='table'){ const t=document.createElement('table'); t.className='sortable editable-table'; t.innerHTML='<thead><tr><th>Column 1</th><th>Column 2</th><th>Remove</th></tr></thead><tbody><tr draggable="true"><td contenteditable="true">Value</td><td contenteditable="true">Value</td><td class="row-del">✕</td></tr></tbody>'; page.insertBefore(t, btn.closest('.bottom-tools')); makeTablesInteractive(); wireRowDelete(); wireDragRows(); }
+      debounceSave();
+    });
+  }
+
+  function init(){
+    document.getElementById('todayDate').textContent = new Date().toLocaleDateString();
+    const days = Math.ceil((LAUNCH - new Date()) / (1000*60*60*24));
+    document.getElementById('daysToLaunch').textContent = days;
+
+    window.__navModel = JSON.parse(JSON.stringify(NAV_MODEL));
+    renderNav();
+    document.getElementById('toggleNavEdit').onclick=()=>document.body.classList.toggle('edit-nav');
+    document.getElementById('addNavGroup').onclick=()=>{ window.__navModel.push({group:'NEW GROUP',items:[['▪','New Item','dashboard']]}); renderNav(); debounceSave(); };
+
+    makeTablesInteractive(); wireRowDelete(); wireLists(); wireItemDelete(); wireDragRows(); wireDragList(); renderAttachments(); wireUniversalAdd(); wireHeaderButtons();
+
+    document.body.addEventListener('input', (e)=>{
+      if(e.target.closest('[data-table="pricing-singles"]')) buildInventoryFromPricing();
+      if(e.target.classList.contains('sellable')) colorSellable();
+      debounceSave();
+    });
+
+    document.getElementById('search').addEventListener('input',e=>{
+      const q=e.target.value.toLowerCase();
+      document.querySelectorAll('.nav-item').forEach(n=>{ n.style.display = n.innerText.toLowerCase().includes(q) ? 'flex' : 'none'; });
+    });
+
+    document.getElementById('calcFormula').onclick=formulaCalc;
+    document.getElementById('saveFormulaBtn').onclick=debounceSave;
+    document.getElementById('recalcBatch').onclick=recalcBatch;
+    document.getElementById('soapBatchDate').onchange=recalcBatch;
+    document.getElementById('recalcCogs').onclick=()=>{ recalcCogs(); colorSellable(); };
+    document.getElementById('exportBatchCSV').onclick=()=>exportTableCSV('batch-input','batch_calc.csv');
+    document.getElementById('exportCogsCSV').onclick=()=>exportTableCSV('cogs-singles','cogs_sheet.csv');
+    document.getElementById('exportPricingCSV').onclick=()=>exportTableCSV('pricing-singles','pricing_quantities.csv');
+    document.getElementById('addContentRow').onclick=()=>{ const t=document.querySelector('[data-table="content-all"] tbody'); const tr=document.createElement('tr'); tr.draggable=true; tr.innerHTML='<td contenteditable="true">2026-09-07</td><td contenteditable="true">IG</td><td contenteditable="true">New post</td><td contenteditable="true">Carousel</td><td contenteditable="true">Barrier Support &amp; Skin Education</td><td contenteditable="true">Idea</td><td contenteditable="true">Hook</td><td contenteditable="true">Caption</td><td contenteditable="true">Join the list at oatearth.com/join</td><td class="row-del">✕</td>'; t.appendChild(tr); wireRowDelete(); wireDragRows(); debounceSave(); };
+    document.getElementById('contentStatusFilter').oninput=filterContent;
+    document.getElementById('contentFormatFilter').oninput=filterContent;
+
+    buildInventoryFromPricing(); colorSellable(); formulaCalc(); recalcBatch(); recalcCogs();
+    showPage('dashboard');
+    setSaving('Saved ✓');
+  }
+
+  function filterContent(){
+    const s=(document.getElementById('contentStatusFilter').value||'').toLowerCase();
+    const f=(document.getElementById('contentFormatFilter').value||'').toLowerCase();
+    document.querySelectorAll('[data-table="content-all"] tbody tr').forEach(r=>{
+      const okS=!s || r.cells[5].innerText.toLowerCase().includes(s);
+      const okF=!f || r.cells[3].innerText.toLowerCase().includes(f);
+      r.style.display = (okS&&okF)?'table-row':'none';
+    });
+  }
+
+  function exportTableCSV(tableName,file){
+    const table=document.querySelector(`[data-table="${tableName}"]`); if(!table) return;
+    const rows=[...table.rows].map(r=>[...r.cells].map(c=>`"${c.innerText.replaceAll('"','""')}"`).join(','));
+    dl(new Blob([rows.join('\n')],{type:'text/csv'}),file);
+  }
+
+  init();
+})();
 </script>
 </body>
 </html>
